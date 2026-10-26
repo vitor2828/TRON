@@ -2,6 +2,9 @@
 
 Uma implementação multijogador de TRON - Redes de Computadores UnB 26.2
 
+<img width="823" height="875" alt="Captura de tela de 2026-10-24 04-40-11" src="https://github.com/user-attachments/assets/17a0900f-1480-4a82-8e5b-e73b0b23ae9e" />
+
+
 ## Componentes do Grupo
 
 Danilo Lins Castro
