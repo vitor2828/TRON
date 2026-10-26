@@ -2,8 +2,7 @@
 
 Uma implementação multijogador de TRON - Redes de Computadores UnB 26.2
 
-<img width="823" height="875" alt="Captura de tela de 2026-10-24 04-40-11" src="https://github.com/user-attachments/assets/17a0900f-1480-4a82-8e5b-e73b0b23ae9e" />
-
+<img width="161" height="97" alt="Captura de tela de 2026-10-26 10-08-40" src="https://github.com/user-attachments/assets/1b03b817-aba9-4efe-9fc8-d0ca730c6ffd" />
 
 ## Componentes do Grupo
 
