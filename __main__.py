@@ -1,5 +1,5 @@
-from .Entities.entities import Cor, Arena, Jogador, Direcao
-from .Render import render
+from Entities.entities import Cor, Arena, Jogador, Direcao
+from Render import render
 import time
 from blessed import Terminal
 
