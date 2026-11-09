@@ -60,7 +60,7 @@ def main():
                 break
 
             arena.atualiza()
-            time.sleep(0.5)
+            time.sleep(0.25)
 
 
 if __name__ == "__main__":
