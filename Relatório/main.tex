@@ -1,0 +1,588 @@
+\documentclass[12pt,a4paper]{article}
+
+% --------------------------------------------------
+% PACOTES
+% --------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    left=3cm,
+    right=2cm,
+    top=3cm,
+    bottom=2cm
+}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{indentfirst}
+\setlength{\parindent}{1.25cm}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+
+\usepackage{xcolor}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+% Código-fonte
+\usepackage{listings}
+
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    showstringspaces=false
+}
+
+% --------------------------------------------------
+% INFORMAÇÕES DO RELATÓRIO
+% --------------------------------------------------
+
+\title{
+    \textbf{Relatório de Produção de Software}\\
+    \large TRON
+}
+
+\author{
+    Danilo Lins\\
+    Nome do Autor 2\\
+    Nome do Autor 3
+}
+
+\date{\today}
+
+
+% ==================================================
+% DOCUMENTO
+% ==================================================
+
+\begin{document}
+
+% --------------------------------------------------
+% CAPA
+% --------------------------------------------------
+
+\begin{titlepage}
+
+    \centering
+
+    {\large Universidade de Brasília / CIC}\\[0.5cm]
+    {\large Ciência da Computação}\\[2cm]
+
+    {\Large\textbf{RELATÓRIO DE PRODUÇÃO DE JOGO MULTIJOGADOR}}\\[1cm]
+
+    {\LARGE\textbf{TRON}}\\[2cm]
+
+    \begin{flushright}
+        \begin{minipage}{0.65\textwidth}
+            Relatório apresentado à disciplina
+            \textit{Redes de Computadores}, como requisito
+            para avaliação do desenvolvimento do trabalho final.
+        \end{minipage}
+    \end{flushright}
+
+    \vfill
+
+    Danilo Lins Castro - 251019735\\
+    Eduardo Sankievicz Lima - 251035102\\
+    João Pedro Barros Silva Azevedo - 251004311\\
+    João Vitor da Silva Lima - 251023101
+
+    \vfill
+
+    Brasília -- DF\\
+    2026
+
+\end{titlepage}
+
+
+% --------------------------------------------------
+% RESUMO
+% --------------------------------------------------
+
+\begin{abstract}
+
+Este relatório apresenta o desenvolvimento do software
+\textit{Nome do Projeto}, descrevendo seus objetivos,
+requisitos, tecnologias utilizadas, decisões de projeto,
+processo de implementação e resultados obtidos.
+
+O sistema foi desenvolvido utilizando as tecnologias
+\textit{Tecnologia 1}, \textit{Tecnologia 2} e
+\textit{Tecnologia 3}. Durante o desenvolvimento foram
+aplicados conceitos relacionados à engenharia de software,
+arquitetura de sistemas, programação e testes.
+
+\textbf{Palavras-chave:} desenvolvimento de software;
+engenharia de software; programação; sistemas.
+
+\end{abstract}
+
+
+% --------------------------------------------------
+% SUMÁRIO
+% --------------------------------------------------
+
+\tableofcontents
+
+\newpage
+
+
+% ==================================================
+% 1. INTRODUÇÃO
+% ==================================================
+
+\section{Introdução}
+
+O desenvolvimento de software envolve diferentes etapas,
+desde a definição do problema até a implementação e
+validação da solução.
+
+Este relatório apresenta o processo de desenvolvimento do
+projeto \textit{Nome do Projeto}, desenvolvido no contexto
+da disciplina \textit{Nome da Disciplina}.
+
+O projeto tem como finalidade solucionar
+\textbf{descrever brevemente o problema que o software
+resolve}.
+
+Ao longo deste relatório são apresentados os objetivos do
+projeto, as tecnologias utilizadas, a metodologia adotada,
+a implementação do sistema, os testes realizados e os
+resultados obtidos.
+
+
+% ==================================================
+% 2. OBJETIVOS
+% ==================================================
+
+\section{Objetivos}
+
+\subsection{Objetivo geral}
+
+Desenvolver um software capaz de
+\textbf{descrever aqui o objetivo principal do sistema}.
+
+\subsection{Objetivos específicos}
+
+Os objetivos específicos do projeto são:
+
+\begin{itemize}
+    \item implementar \textbf{funcionalidade 1};
+    \item implementar \textbf{funcionalidade 2};
+    \item desenvolver \textbf{funcionalidade 3};
+    \item aplicar conceitos de engenharia de software;
+    \item realizar testes para verificar o funcionamento
+    do sistema.
+\end{itemize}
+
+
+% ==================================================
+% 3. REQUISITOS
+% ==================================================
+
+\section{Requisitos do sistema}
+
+\subsection{Requisitos funcionais}
+
+Os requisitos funcionais descrevem as funcionalidades que
+o sistema deve oferecer.
+
+\begin{table}[H]
+\centering
+\caption{Requisitos funcionais}
+\label{tab:requisitos-funcionais}
+
+\begin{tabular}{p{2cm} p{10cm}}
+\toprule
+\textbf{ID} & \textbf{Descrição} \\
+\midrule
+
+RF01 & O sistema deve permitir que o usuário realize
+      \textbf{ação 1}. \\
+
+RF02 & O sistema deve permitir que o usuário realize
+      \textbf{ação 2}. \\
+
+RF03 & O sistema deve apresentar
+      \textbf{informação 3}. \\
+
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+\subsection{Requisitos não funcionais}
+
+Entre os requisitos não funcionais definidos para o sistema
+estão:
+
+\begin{itemize}
+    \item facilidade de utilização;
+    \item desempenho adequado;
+    \item manutenibilidade do código;
+    \item segurança;
+    \item compatibilidade com as plataformas definidas
+    para o projeto.
+\end{itemize}
+
+
+% ==================================================
+% 4. TECNOLOGIAS
+% ==================================================
+
+\section{Tecnologias e ferramentas}
+
+Para o desenvolvimento do projeto foram utilizadas
+diferentes tecnologias e ferramentas.
+
+\subsection{Linguagem de programação}
+
+O sistema foi desenvolvido utilizando
+\textbf{Nome da linguagem}, escolhida devido a
+\textbf{justificativa}.
+
+\subsection{Frameworks e bibliotecas}
+
+Foram utilizadas as seguintes bibliotecas e frameworks:
+
+\begin{itemize}
+    \item \textbf{Framework 1}: utilizado para
+    \textbf{finalidade};
+    
+    \item \textbf{Biblioteca 2}: utilizada para
+    \textbf{finalidade};
+    
+    \item \textbf{Biblioteca 3}: utilizada para
+    \textbf{finalidade}.
+\end{itemize}
+
+\subsection{Ferramentas de desenvolvimento}
+
+O desenvolvimento foi realizado utilizando ferramentas como
+\textbf{IDE/editor}, \textbf{Git} e
+\textbf{GitHub}.
+
+
+% ==================================================
+% 5. METODOLOGIA
+% ==================================================
+
+\section{Metodologia de desenvolvimento}
+
+O desenvolvimento do sistema foi dividido em etapas,
+permitindo organizar a implementação das funcionalidades.
+
+Inicialmente foi realizada a análise do problema e a
+definição dos requisitos. Em seguida, foi projetada a
+estrutura do sistema e posteriormente realizada a
+implementação.
+
+As principais etapas foram:
+
+\begin{enumerate}
+    \item levantamento dos requisitos;
+    \item definição da arquitetura;
+    \item implementação;
+    \item testes;
+    \item correção de erros;
+    \item integração das funcionalidades;
+    \item validação final.
+\end{enumerate}
+
+
+% ==================================================
+% 6. ARQUITETURA
+% ==================================================
+
+\section{Arquitetura do sistema}
+
+A arquitetura do sistema foi definida com o objetivo de
+organizar suas responsabilidades e facilitar a manutenção
+do código.
+
+\subsection{Visão geral}
+
+O sistema é composto pelos seguintes componentes:
+
+\begin{itemize}
+    \item \textbf{Componente 1}: responsável por
+    \textbf{função};
+    
+    \item \textbf{Componente 2}: responsável por
+    \textbf{função};
+    
+    \item \textbf{Componente 3}: responsável por
+    \textbf{função}.
+\end{itemize}
+
+
+\subsection{Diagrama da arquitetura}
+
+A Figura~\ref{fig:arquitetura} apresenta uma visão geral
+da arquitetura do sistema.
+
+\begin{figure}[H]
+    \centering
+
+    % Substitua pelo arquivo da imagem
+    \includegraphics[width=0.85\textwidth]{arquitetura.png}
+
+    \caption{Arquitetura do sistema.}
+    \label{fig:arquitetura}
+\end{figure}
+
+
+% ==================================================
+% 7. IMPLEMENTAÇÃO
+% ==================================================
+
+\section{Implementação}
+
+Nesta seção são apresentadas as principais decisões e
+componentes implementados durante o desenvolvimento.
+
+\subsection{Estrutura do projeto}
+
+A estrutura do projeto foi organizada de forma a separar
+as diferentes responsabilidades do sistema.
+
+Por exemplo:
+
+\begin{lstlisting}[language=Python, caption={Exemplo de estrutura do projeto}]
+projeto/
+|-- src/
+|   |-- main.py
+|   |-- models/
+|   |-- services/
+|   |-- controllers/
+|-- tests/
+|-- README.md
+\end{lstlisting}
+
+
+\subsection{Principais funcionalidades}
+
+Uma das principais funcionalidades implementadas foi
+\textbf{descrever funcionalidade}.
+
+O funcionamento dessa funcionalidade ocorre da seguinte
+forma:
+
+\begin{enumerate}
+    \item o usuário realiza \textbf{ação};
+    \item o sistema recebe os dados;
+    \item os dados são processados;
+    \item o sistema realiza \textbf{operação};
+    \item o resultado é apresentado ao usuário.
+\end{enumerate}
+
+
+\subsection{Exemplo de implementação}
+
+A Listagem~\ref{lst:exemplo} apresenta um trecho da
+implementação.
+
+\begin{lstlisting}[language=Python,
+caption={Exemplo de implementação},
+label={lst:exemplo}]
+
+def calcular(valor1, valor2):
+    resultado = valor1 + valor2
+    return resultado
+
+\end{lstlisting}
+
+
+% ==================================================
+% 8. TESTES
+% ==================================================
+
+\section{Testes}
+
+Foram realizados testes com o objetivo de verificar o
+funcionamento das funcionalidades implementadas.
+
+\subsection{Casos de teste}
+
+\begin{table}[H]
+\centering
+\caption{Casos de teste}
+\label{tab:testes}
+
+\begin{tabular}{p{1.5cm} p{4cm} p{4cm} p{2cm}}
+\toprule
+\textbf{ID} &
+\textbf{Entrada} &
+\textbf{Resultado esperado} &
+\textbf{Resultado} \\
+\midrule
+
+CT01 &
+Entrada válida &
+Sistema deve processar a entrada &
+Passou \\
+
+CT02 &
+Entrada inválida &
+Sistema deve apresentar erro &
+Passou \\
+
+CT03 &
+Campo vazio &
+Sistema deve rejeitar a operação &
+Passou \\
+
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+\subsection{Resultados}
+
+Os testes realizados demonstraram que as principais
+funcionalidades do sistema apresentaram o comportamento
+esperado.
+
+Caso necessário, podem ser apresentados nesta seção
+gráficos, tabelas ou capturas de tela do sistema.
+
+
+\begin{figure}[H]
+    \centering
+
+    % Substitua pelo arquivo da imagem
+    \includegraphics[width=0.8\textwidth]{screenshot.png}
+
+    \caption{Interface do sistema durante a execução.}
+    \label{fig:screenshot}
+\end{figure}
+
+
+% ==================================================
+% 9. DIFICULDADES E DECISÕES
+% ==================================================
+
+\section{Dificuldades e decisões de projeto}
+
+Durante o desenvolvimento foram encontradas algumas
+dificuldades relacionadas a \textbf{descrever problema}.
+
+Para solucionar esse problema, foi adotada a estratégia
+\textbf{descrever solução}.
+
+Também foram tomadas decisões relacionadas à arquitetura,
+organização do código e escolha das tecnologias.
+
+Essas decisões contribuíram para
+\textbf{descrever resultado}.
+
+
+% ==================================================
+% 10. RESULTADOS
+% ==================================================
+
+\section{Resultados}
+
+Ao final do desenvolvimento, o sistema foi capaz de
+\textbf{descrever resultado principal}.
+
+As funcionalidades definidas inicialmente foram
+implementadas e testadas.
+
+A Tabela~\ref{tab:resultados} apresenta um resumo dos
+resultados obtidos.
+
+\begin{table}[H]
+\centering
+\caption{Resumo dos resultados}
+\label{tab:resultados}
+
+\begin{tabular}{p{7cm} p{4cm}}
+\toprule
+\textbf{Funcionalidade} & \textbf{Status} \\
+\midrule
+
+Funcionalidade 1 & Implementada \\
+Funcionalidade 2 & Implementada \\
+Funcionalidade 3 & Implementada \\
+Funcionalidade 4 & Parcialmente implementada \\
+
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+% ==================================================
+% 11. CONCLUSÃO
+% ==================================================
+
+\section{Conclusão}
+
+O desenvolvimento do projeto permitiu aplicar conceitos
+relacionados à produção de software, desde a definição dos
+requisitos até a implementação e realização dos testes.
+
+O sistema desenvolvido atende aos principais objetivos
+estabelecidos no início do projeto, apresentando as
+funcionalidades necessárias para
+\textbf{descrever finalidade}.
+
+Além disso, o desenvolvimento possibilitou a aplicação
+prática de conhecimentos relacionados a
+\textbf{tecnologias/conceitos utilizados}.
+
+Como trabalhos futuros, podem ser consideradas melhorias
+como \textbf{melhoria 1}, \textbf{melhoria 2} e
+\textbf{melhoria 3}.
+
+
+% ==================================================
+% REFERÊNCIAS
+% ==================================================
+
+\begin{thebibliography}{9}
+
+\bibitem{exemplo}
+AUTOR, Nome.
+
+\textit{Título da obra}.
+
+Editora, ano.
+
+\bibitem{documentacao}
+NOME DA ORGANIZAÇÃO.
+
+\textit{Documentação oficial da tecnologia}.
+
+Disponível em: \url{https://exemplo.com}.
+
+Acesso em: 24 out. 2026.
+
+\end{thebibliography}
+
+
+\end{document}

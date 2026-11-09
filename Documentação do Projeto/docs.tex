@@ -1,0 +1,229 @@
+% Template last modified by Jake Hart; please contact course staff if you have any questions regarding using this template
+
+\documentclass{cisXXX} % You must have the cisXXX .cls file in your project or working directory (i.e. the same directory as this document) 
+
+\HWauthor{TRON}{} % Put your name and Penn email on this line
+\HWno{1} % Enter the number of the homework you are working on
+\HWcourse{Redes 2026.2} % Enter the course department and number here
+
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{dirtree}
+
+% Configuração para boa formatação de código Python
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=Python
+}
+
+\lstset{style=pythonstyle}
+
+\begin{document}
+    \maketitle
+
+    Esta é a documentação progressiva para o projeto-aplicativo TRON, da disciplina Redes de Computadores. Sua função é apenas descrever cada parte do código de maneira detalhada, para que cada componente tenha conhecimento completo do trabalho e o código não fique poluído com comentários complexos.
+
+    \section{Do Gameloop}
+    \subsection{Estrutura de Arquivos do Projeto}
+    Os arquivos \verb|__init__.py| (mostrados como init.py) são arquivos vazios que servem somente para identificar a pasta como módulo python. Atualmente o projeto está organizado da seguinte forma:
+    
+    \begin{center}
+    \begin{minipage}{0.7\textwidth}
+    \dirtree{%
+    .1 /.
+    .2 TRON/ \DTcomment{Raiz do jogo}.
+    .3 venv/ \DTcomment{Arquivo de ambiente virtual}.
+    .3 main.py \DTcomment{Base da build/Programa cliente}.
+    .3 init.py.
+    .3 Entities/ \DTcomment{Definição de Classes}.
+    .4 init.py.
+    .4 entities.py.
+    .3 Render/ \DTcomment{Funções voltadas ao uso do terminal}.
+    .4 init.py.
+    .4 render.py.
+    .3 Lobby \DTcomment{Pasta vazia para implementar servidor/lobby}.
+    }
+    \end{minipage}
+    \end{center}
+
+    \subsection{Arquivo main}
+            O módulo \texttt{blessed} é usado para pooling de teclado (Input não-bloqueante) com  timeout de 0.1s. Foi escolhida pois é compatível com a função \texttt{print()} nativa do Python3. O módulo \texttt{time} importa funções para usar o tempo do sistema. Aqui usamos para pausar o jogo por 1s. (Configurações não otimizadas. O jogo tem um aspecto lento e com delay de resposta considerável)
+
+            Para rodar o jogo, é exigido um ambiente virtual \texttt{.venv} com o o módulo blessed instalado via (\texttt{pip install blessed}). Atualmente, o jogo conta com:
+            \begin{itemize}
+                \item Impedimento de movimento no sentido contrário da direção (Não pode dar cavalo de pau) [\textbf{\textit{Dentro da condição de mudança de direção é feita a comparação com o lado oposto.}}]
+                \item Finalização do jogo no caso da presença de 1 ou menos jogadores. [\textbf{\textit{Apenas percorre o vetor de jogadores contando quantos estão vivos (isAlive = True)}}]
+                \item 4 cores para melhor destaque Vermelho, Verde, Amarelo e Azul
+                \item Colisão dos jogadores com extremos da arena ("/"), com rastro do proprio jogo e rastro dos demais jogadores em todas as direções. [\textbf{\textit{A verficação é simples: move-se o jogador e logo, em seguida, é feita a comparação com o valor do tile. Se for um tile preenchido \texttt{jogador.isAlive = False}}}]
+                \item Geração de rastro da mesma cor do jogador. Indicado por "*" colorido [\textit{\textbf{Atualiza a antiga posição do jogador para "*" e depois o jogador é movimentado.}}]
+            \end{itemize}
+    
+    \begin{lstlisting}
+    from .Entities.entities import Cor, Arena, Jogador, Direcao
+    from .Render import render
+    import time
+    from blessed import Terminal
+    
+    
+    def main():
+    
+        # Deteccao e instanciacao da lista de jogadores (Lobby/Servidor) #
+    
+        LARGURA = 50
+        ALTURA = 50
+        arena = Arena(jogadores, LARGURA, ALTURA)
+    
+        # GAME LOOP
+        term = Terminal()
+        with term.cbreak():
+            while True:
+                # Pooling de teclado
+                if jogador1.get_isAlive():
+                    tecla = term.inkey(timeout=0.1)
+                    if tecla.lower() == "w" and jogador1.direcao != Direcao.DOWN:
+                        jogador1.set_direcao(Direcao.UP)
+                    elif tecla.lower() == "a" and jogador1.direcao != Direcao.RIGHT:
+                        jogador1.set_direcao(Direcao.LEFT)
+                    elif tecla.lower() == "s" and jogador1.direcao != Direcao.UP:
+                        jogador1.set_direcao(Direcao.DOWN)
+                    elif tecla.lower() == "d" and jogador1.direcao != Direcao.LEFT:
+                        jogador1.set_direcao(Direcao.RIGHT)
+    
+                # Renderizacao
+                render.limpar_tela()
+                arena.show()
+    
+                vivos = 0
+                for j in jogadores:
+                    if j.get_isAlive():
+                        vivos += 1
+    
+                if vivos <= 1:
+                    print("Jogo encerrou")
+                    break
+    
+                arena.atualiza()
+                time.sleep(0.5)
+    
+    
+    if __name__ == "__main__":
+        main()
+    \end{lstlisting}
+    \subsection{Das classes}
+    As cores são definidas usando código ANSI para cor. Útil para casos simples como esse
+    \begin{lstlisting}
+        class Cor:
+            RED = "\033[31m"
+            GREEN = "\033[32m"
+            YELLOW = "\033[33m"
+            BLUE = "\033[34m"
+            RESET = "\033[0m"
+    \end{lstlisting}
+
+    A direção é uma tupla com dois valores: incremento do eixo X e incremento do eixo Y.
+    \begin{lstlisting}
+        class Direcao:
+            UP = (0, -1)
+            DOWN = (0, 1)
+            LEFT = (-1, 0)
+            RIGHT = (1, 0)
+            NEUTRO = (0, 0)
+    \end{lstlisting}
+
+    Um jogador apresenta cor prória, coordenadas e direcao (Questiona-se colocar o endereço e porta dentro da classe).
+    De resto tem um getter, um setter e função move(), que é autoexplicativa.
+    \begin{lstlisting}
+        class Jogador:
+            def __init__(self, pos_x: int, pos_y: int, cor: Cor, direcao: Direcao):
+                self.pos_x = pos_x
+                self.pos_y = pos_y
+                self.cor = cor
+                self.isAlive = True
+                self.direcao = direcao
+        
+            def get_isAlive(self):
+                return self.isAlive
+        
+            def set_direcao(self, direcao):
+                self.direcao = direcao
+        
+            def move(self):
+                dx, dy = self.direcao
+                self.pos_x += dx
+                self.pos_y += dy
+    \end{lstlisting}
+
+    Por fim, a classe Arena descreve o espaço de jogo. Trata-se de uma matriz de strings que salva a cor e o símbolo de cada tile dentro da string da célula. Conta com duas funções show() que printa a matriz e a funciona atualiza que movimenta todos jogadores e coloca seus rastros.
+    \begin{lstlisting}
+    class Arena:
+        def __init__(self, jogadores, largura, altura):
+            self.jogadores = jogadores
+            self.LARGURA = largura
+            self.ALTURA = altura
+            self.grid = [[" " for _ in range(self.LARGURA)] for _ in range(self.ALTURA)]
+            for i in range(self.ALTURA):
+                for j in range(self.LARGURA):
+                    if i == 0 or j == 0 or i == self.ALTURA-1 or j == self.LARGURA-1:
+                        self.grid[i][j] = "/"
+    
+        def show(self):
+            for j in self.jogadores:
+                if(j.get_isAlive()):
+                    self.grid[j.pos_y][j.pos_x] = f"{j.cor}&{Cor.RESET}"
+    
+            for i in range(self.ALTURA):
+                for j in range(self.LARGURA):
+                    print(self.grid[i][j], end=" ")
+                print()
+    
+        def atualiza(self):
+            for j in self.jogadores:
+                if(j.get_isAlive()):
+                    self.grid[j.pos_y][j.pos_x] = f"{j.cor}*{Cor.RESET}"
+                    j.move()
+                    if "/" in self.grid[j.pos_y][j.pos_x] or "*" in self.grid[j.pos_y][j.pos_x]:
+                        j.isAlive = False
+    \end{lstlisting}
+    
+    \subsection{Da renderização}
+    É um módulo com só uma função no momento - \verb|limpa_tela()|, sua utilidade é auto-explicativa. Foi adaptada usando os módulos \texttt{os} e \texttt{subprocess} para funcionar em qualquer sistema operacional. (Ainda não foi testado no Windows)
+    \begin{lstlisting}
+    import os
+    import subprocess
+    
+    def limpar_tela():
+        subprocess.run("cls" if os.name=="nt" else "clear")
+    
+    \end{lstlisting}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\linewidth]{}
+        \caption{Caption}
+        \label{fig:placeholder}
+    \end{figure}
+
+    \section{Da Network}
+
+\end{document}
