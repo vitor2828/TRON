@@ -1,5 +1,5 @@
-from Entities.entities import Cor, Arena, Jogador, Direcao
-from Render import render
+from .Entities.entities import Cor, Arena, Jogador, Direcao
+from .Render import render
 import time
 from blessed import Terminal
 
@@ -8,8 +8,8 @@ def main():
     ######################################################################3333
     # (INICIO)Parte do lobby de criação e geração de jogadores
 
-    LARGURA = 50
-    ALTURA = 50
+    LARGURA = 20
+    ALTURA = 15
 
     #COORDENADAS_INICIAIS = [(1, 1), (1, ALTURA-2), (LARGURA-2, 1), (LARGURA-2, ALTURA-2)]
 
