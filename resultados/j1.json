@@ -1,0 +1,30 @@
+{
+  "player_id": 2,
+  "phase": "FINISHED",
+  "confirmed_tick": 5,
+  "final_hash": "30a248dfdfbb4d37643005134fbe931afb86b03d5ea51d90b1b0b19edb405394",
+  "config_hash": "42ff2f9ee3f3a9714d2d2d5ef64d9f1c02b2e569182491f208d4e7ff1b25d12e",
+  "result": {
+    "winner_id": null
+  },
+  "abort_info": null,
+  "error": null,
+  "fault_injected": false,
+  "accepted_broadcasts": {
+    "READY": 1,
+    "MOVE": 5,
+    "STATE_HASH": 5
+  },
+  "received_messages": {
+    "READY": 2,
+    "MOVE": 10,
+    "STATE_HASH": 10
+  },
+  "flushed": false,
+  "closed": true,
+  "transport_errors": {
+    "1": "Fim do fluxo remoto",
+    "3": "Fim do fluxo remoto"
+  },
+  "success": true
+}
