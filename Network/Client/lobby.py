@@ -162,17 +162,31 @@ def lobby():
     try:
         cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         cliente.connect((HOST_SERVIDOR, PORT_SERVIDOR))
+
+        socket_p2p = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket_p2p.bind(("0.0.0.0", 0))
+        socket_p2p.listen()
+
         print("Conectado ao servidor!")
 
     except:
         print("Houve uma falha na conexão ao servidor. Tente novamente.")
+        socket_p2p.close()
         cliente.close()
         sys.exit(1)
 
 
     print("Seja bem-vindo! Primeiro, qual seu nome?")
     nome = input("Nome: ")
-    cliente.sendall(nome.encode('utf-8'))
+
+    pacote = {
+        "nome": nome,
+        "ip": socket_p2p.getsockname()[0],
+        "porta": socket_p2p.getsockname()[1]
+    }
+
+    msg = json.dumps(pacote) + "\n"
+    cliente.sendall(msg.encode('utf-8'))
     limpa_tela()
 
     thread = threading.Thread(
@@ -196,4 +210,9 @@ def lobby():
 
     trata_partida()
 
-    return informacoes_partida
+    cliente.close()
+
+    return [socket_p2p, informacoes_partida]
+
+print(lobby())
+

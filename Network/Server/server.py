@@ -25,11 +25,15 @@ class Partida:
 
 class Cliente :
     conexao = ""
+    ip_p2p = ""
+    porta_p2p = ""
     nome = ""
 
-    def __init__(self, conexao, nome):
+    def __init__(self, conexao, nome, ip_p2p, porta_p2p):
         self.conexao = conexao
         self.nome = nome
+        self.ip_p2p = ip_p2p
+        self.porta_p2p = porta_p2p
 
 class ErroProtocolo(Exception):
     def __init__(self, codigo, mensagem=""):
@@ -90,9 +94,11 @@ def entrar_partida(cliente, id_partida):
 def receber_cliente(conn, endereco, id_cliente):
 
     with lock:
-        msg = conn.recv(50).decode()
+        msg = conn.recv(100).decode()
 
-        cliente = Cliente(conn, msg)
+        dados = json.loads(msg)
+
+        cliente = Cliente(conn, dados["nome"], dados["ip"], dados["porta"])
 
         clientes[id_cliente] = {
             "informacoes": [endereco[0], endereco[1]],
@@ -173,8 +179,8 @@ def receber_cliente(conn, endereco, id_cliente):
                         for outros_jogadores in partidas[numeropartida].jogadores:
                             if outros_jogadores.conexao != jogador.conexao:
                                 info[str(conexao_counter)] = {
-                                    "ip_jogador": outros_jogadores.conexao.getpeername()[0],
-                                    "porta_jogador": outros_jogadores.conexao.getpeername()[1],
+                                    "ip_jogador": outros_jogadores.ip_p2p,
+                                    "porta_jogador": outros_jogadores.porta_p2p,
                                 }
                                 conexao_counter += 1
 
