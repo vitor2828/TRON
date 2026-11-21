@@ -2,17 +2,12 @@ from .Entities.entities import *
 import time
 from blessed import Terminal
 
-
 def main():
     ######################################################################3333
     # (INICIO)Parte do lobby de criação e geração de jogadores
 
-    LARGURA = 20
+    LARGURA = 30
     ALTURA = 15
-
-    #COORDENADAS_INICIAIS = [(1, 1), (1, ALTURA-2), (LARGURA-2, 1), (LARGURA-2, ALTURA-2)]
-
-    #DIRECOES_INICIAIS = [Direcao.RIGHT, Direcao.DOWN, Direcao.UP, Direcao.LEFT]
 
     jogador1 = Jogador(1, 1, Cor.RED, Direcao.RIGHT)
     jogador2 = Jogador(1, ALTURA-2, Cor.GREEN, Direcao.UP)
@@ -29,6 +24,7 @@ def main():
     ###################################################################3
 
     arena = Arena(jogadores, LARGURA, ALTURA)
+
 
     term = Terminal()
     with term.cbreak():
