@@ -197,5 +197,3 @@ def lobby():
     trata_partida()
 
     return informacoes_partida
-
-print(lobby())
