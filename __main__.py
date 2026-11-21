@@ -1,5 +1,4 @@
-from .Entities.entities import Cor, Arena, Jogador, Direcao
-from .Render import render
+from .Entities.entities import *
 import time
 from blessed import Terminal
 
@@ -47,7 +46,7 @@ def main():
                     jogador1.set_direcao(Direcao.RIGHT)
 
             # Renderização
-            render.limpar_tela()
+            limpar_tela()
             arena.show()
 
             vivos = 0
