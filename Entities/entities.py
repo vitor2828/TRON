@@ -1,8 +1,14 @@
+import os
+import subprocess
+
+def limpar_tela():
+    subprocess.run("cls" if os.name=="nt" else "clear")
+
 class Cor:
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    BLUE = "\033[34m"
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    BLUE = "\033[94m"
     RESET = "\033[0m"
 
 class Direcao:

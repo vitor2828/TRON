@@ -4,6 +4,15 @@ Uma implementação multijogador de TRON - Redes de Computadores UnB 26.2
 
 <img width="161" height="97" alt="Captura de tela de 2026-10-26 10-08-40" src="https://github.com/user-attachments/assets/1b03b817-aba9-4efe-9fc8-d0ca730c6ffd" />
 
+## Executar com Docker
+
+O jogo usa o teclado no terminal, então execute o container em modo interativo:
+
+```bash
+docker build -t tron .
+docker run --rm -it tron
+```
+
 ## Componentes do Grupo
 
 Danilo Lins Castro
@@ -49,6 +58,5 @@ A primeira opção consiste na implementação de um jogo multijogador em tempo 
 Além dos requisitos comuns, esta opção deverá atender aos requisitos a seguir. Todos os jogadores deverão chegar ao mesmo resultado sobre quais motos colidiram, em qual ciclo e quem venceu a partida. Divergências entre jogadores quanto a esses eventos não serão aceitas. O grupo deverá definir qual participante, ou qual mecanismo, determina o estado do jogo, e justificar essa decisão considerando os atrasos da rede.
 
 A desconexão de um jogador deverá resultar na eliminação de sua moto, e a partida deverá continuar para os demais. Caso a arquitetura escolhida dependa de um participante específico para coordenar a partida, a falha desse participante deverá, no mínimo, encerrar a partida de forma controlada para todos os jogadores restantes.
-
 
 
