@@ -1,10 +1,18 @@
+"""Protocolo P2P TRON v3: mensagens JSON/UTF-8 terminadas por LF.
+
+Este modulo valida o FORMATO. A sessao valida estados, movimentos, barreiras,
+duplicatas, timeouts e comparacao dos hashes. Nao abre sockets nem cria threads.
+
+"""
+
+from copy import deepcopy
 import hashlib
 import json
 import re
 
 
 # 1. Framing e vocabulario do protocolo.
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 3
 DELIMITER = b"\n"
 MAX_MESSAGE_SIZE = 4096  # Conteudo, sem o LF final.
 
@@ -13,15 +21,34 @@ READY = "READY"
 MOVE = "MOVE"
 STATE_HASH = "STATE_HASH"
 LEAVE_REQUEST = "LEAVE_REQUEST"
+IDLE = "IDLE"
+LEAVE_ACK = "LEAVE_ACK"
+FINISH_ACK = "FINISH_ACK"
+FINISH_COMMIT = "FINISH_COMMIT"
 ABORT = "ABORT"
 
-MESSAGE_TYPES = frozenset({HELLO, READY, MOVE, STATE_HASH, LEAVE_REQUEST, ABORT})
+FAILURE_REPORT = "FAILURE_REPORT"
+RECOVERY_BEGIN = "RECOVERY_BEGIN"
+RECOVERY_STATUS = "RECOVERY_STATUS"
+RECOVERY_PROPOSE = "RECOVERY_PROPOSE"
+RECOVERY_ACK = "RECOVERY_ACK"
+RECOVERY_COMMIT = "RECOVERY_COMMIT"
+RECOVERY_APPLIED = "RECOVERY_APPLIED"
+RECOVERY_RESUME = "RECOVERY_RESUME"
+RECOVERY_PROBE = "RECOVERY_PROBE"
+RECOVERY_ALIVE = "RECOVERY_ALIVE"
+RECOVERY_TYPES = frozenset({FAILURE_REPORT, RECOVERY_BEGIN, RECOVERY_STATUS,
+    RECOVERY_PROPOSE, RECOVERY_ACK, RECOVERY_COMMIT, RECOVERY_APPLIED,
+    RECOVERY_RESUME, RECOVERY_PROBE, RECOVERY_ALIVE})
+
+MESSAGE_TYPES = RECOVERY_TYPES | frozenset({HELLO, READY, MOVE, STATE_HASH, LEAVE_REQUEST, IDLE, LEAVE_ACK, FINISH_ACK, FINISH_COMMIT, ABORT})
 ABORT_REASONS = frozenset({
     "CONFIG_MISMATCH", "INVALID_MESSAGE", "INVALID_MOVE", "CONFLICTING_MOVE",
     "STATE_MISMATCH", "PEER_LEFT", "PEER_DISCONNECTED", "TIMEOUT",
+    "COORDINATOR_LOST", "RECOVERY_FAILED",
 })
 ENVELOPE_FIELDS = frozenset({
-    "version", "type", "match_id", "sender_id", "tick", "data",
+    "version", "type", "match_id", "sender_id", "tick", "epoch", "data",
 })
 HASH_PATTERN = re.compile(r"[0-9a-f]{64}")
 
@@ -30,7 +57,7 @@ class ProtocolError(ValueError):
     """Mensagem ou conteudo fora do contrato do protocolo."""
 
 
-# 2. Validadores pequenos, reutilizados pelas seis mensagens.
+# 2. Validadores pequenos, reutilizados pelas mensagens normais e de recuperacao.
 def _require(condition, description):
     if not condition:
         raise ProtocolError(description)
@@ -71,10 +98,13 @@ def validate_message(message):
     )
     _check_integer(message["sender_id"], "sender_id", minimum=0)
     _check_integer(message["tick"], "tick", minimum=0)
+    _check_integer(message["epoch"], "epoch", minimum=0)
     payload = message["data"]
     _require(type(payload) is dict, "data deve ser um objeto")
 
-    if kind in {HELLO, LEAVE_REQUEST}:
+    if kind in RECOVERY_TYPES:
+        _validate_recovery(kind, payload)
+    elif kind in {HELLO, LEAVE_REQUEST, IDLE}:
         _check_fields(payload, set(), "data")
     elif kind == READY:
         _check_fields(payload, {"config_hash"}, "data")
@@ -84,8 +114,19 @@ def validate_message(message):
         # Negativos sao permitidos: sair da arena pode eliminar a moto.
         _check_integer(payload["x"], "x")
         _check_integer(payload["y"], "y")
-    elif kind == STATE_HASH:
+    elif kind in {STATE_HASH, FINISH_ACK}:
         _check_fields(payload, {"state_hash"}, "data")
+        _check_hash(payload["state_hash"], "state_hash")
+    elif kind == FINISH_COMMIT:
+        _check_fields(payload, {"state_hash", "ack_ids"}, "data")
+        _check_hash(payload["state_hash"], "state_hash")
+        ids = payload["ack_ids"]
+        _require(type(ids) is list and 1 <= len(ids) <= 4 and
+                 all(type(i) is int and i >= 0 for i in ids) and ids == sorted(set(ids)),
+                 "ack_ids exige IDs unicos ordenados")
+    elif kind == LEAVE_ACK:
+        _check_fields(payload, {"player_id", "state_hash"}, "data")
+        _check_integer(payload["player_id"], "player_id", minimum=0)
         _check_hash(payload["state_hash"], "state_hash")
     elif kind == ABORT:
         _check_fields(payload, {"reason", "related_tick"}, "data")
@@ -98,14 +139,57 @@ def validate_message(message):
             _check_integer(payload["related_tick"], "related_tick", minimum=0)
 
     if kind in {HELLO, READY}:
-        _require(message["tick"] == 0, "HELLO e READY pertencem ao ciclo 0")
-    elif kind in {MOVE, STATE_HASH}:
-        _require(message["tick"] >= 1, "MOVE e STATE_HASH comecam no ciclo 1")
+        _require(message["tick"] == 0 and message["epoch"] == 0,
+                 "HELLO e READY pertencem ao ciclo e epoca 0")
+    elif kind in {MOVE, STATE_HASH, IDLE, LEAVE_REQUEST, LEAVE_ACK, FINISH_ACK, FINISH_COMMIT}:
+        _require(message["tick"] >= 1, "Mensagem de ciclo exige tick >= 1")
+
+
+def _validate_recovery(kind, data):
+    common = {"recovery_id", "failed_id"}
+    extra = {
+        FAILURE_REPORT: set(),
+        RECOVERY_BEGIN: {"members", "coordinator_id"},
+        RECOVERY_STATUS: {"part", "total", "content"},
+        RECOVERY_PROPOSE: {"base_tick", "base_hash", "state_hash", "members",
+                           "coordinator_id", "new_epoch"},
+        RECOVERY_ACK: {"state_hash"}, RECOVERY_COMMIT: {"state_hash"},
+        RECOVERY_APPLIED: {"state_hash"}, RECOVERY_RESUME: {"state_hash"},
+        RECOVERY_PROBE: {"recipient_id"}, RECOVERY_ALIVE: {"recipient_id"},
+    }[kind]
+    _check_fields(data, common | extra, "data")
+    _require(type(data["recovery_id"]) is str and 1 <= len(data["recovery_id"]) <= 80,
+             "recovery_id invalido")
+    _check_integer(data["failed_id"], "failed_id", 0)
+    if "members" in extra:
+        ids = data["members"]
+        _require(type(ids) is list and 1 <= len(ids) <= 4 and
+                 all(type(i) is int and i >= 0 for i in ids) and ids == sorted(set(ids)),
+                 "members exige IDs ordenados e unicos")
+    for key in ("coordinator_id", "base_tick", "new_epoch", "recipient_id"):
+        if key in extra:
+            _check_integer(data[key], key, 0)
+    for key in ("base_hash", "state_hash"):
+        if key in extra:
+            _check_hash(data[key], key)
+    if kind == RECOVERY_STATUS:
+        _check_integer(data["part"], "part", 0)
+        _check_integer(data["total"], "total", 1)
+        _require(data["part"] < data["total"] <= 64, "Partes invalidas")
+        _require(type(data["content"]) is str and len(data["content"]) <= 1000,
+                 "Fragmento de status invalido")
+
+
+def make_recovery(kind, match_id, sender_id, tick, epoch, recovery_id, failed_id, **data):
+    _require(kind in RECOVERY_TYPES, "Tipo de recuperacao invalido")
+    return make_message(kind, match_id, sender_id, tick,
+                        {"recovery_id": recovery_id, "failed_id": failed_id, **data},
+                        epoch=epoch)
 
 
 # 4. Construcao das mensagens sem repetir o envelope nos chamadores.
-def make_message(kind, match_id, sender_id, tick, data):
-    """Cria e valida uma mensagem, copiando o payload desta versao (plano)."""
+def make_message(kind, match_id, sender_id, tick, data, *, epoch=0):
+    """Cria e valida uma mensagem, copiando recursivamente o payload."""
     _require(type(data) is dict, "data deve ser um objeto")
     message = {
         "version": PROTOCOL_VERSION,
@@ -113,7 +197,8 @@ def make_message(kind, match_id, sender_id, tick, data):
         "match_id": match_id,
         "sender_id": sender_id,
         "tick": tick,
-        "data": data.copy(),
+        "epoch": epoch,
+        "data": deepcopy(data),
     }
     validate_message(message)
     return message
@@ -137,8 +222,20 @@ def make_state_hash(match_id, sender_id, tick, state_hash):
     )
 
 
-def make_leave_request(match_id, sender_id, last_confirmed_tick):
-    return make_message(LEAVE_REQUEST, match_id, sender_id, last_confirmed_tick, {})
+def make_idle(match_id, sender_id, tick):
+    """Jogador morto, ainda conectado, declara participacao neste ciclo."""
+    return make_message(IDLE, match_id, sender_id, tick, {})
+
+
+def make_leave_request(match_id, sender_id, effective_tick):
+    """Declaracao exclusiva de saida neste ciclo; substitui MOVE ou IDLE."""
+    return make_message(LEAVE_REQUEST, match_id, sender_id, effective_tick, {})
+
+
+def make_leave_ack(match_id, sender_id, tick, player_id, state_hash):
+    """Emitido depois de confirmar o ciclo que removeu player_id."""
+    return make_message(LEAVE_ACK, match_id, sender_id, tick,
+                        {"player_id": player_id, "state_hash": state_hash})
 
 
 def make_abort(match_id, sender_id, last_confirmed_tick, reason, related_tick=None):
