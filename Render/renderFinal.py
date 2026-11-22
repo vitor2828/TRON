@@ -6,7 +6,7 @@ import re
 import sys
 import time
 
-from Network.Client.simulation import validar_estado, WALL
+from ..Network.Client.simulation import validar_estado, WALL
 
 
 # 1. Somente apresentacao: nenhum destes textos/codigos entra no estado logico.

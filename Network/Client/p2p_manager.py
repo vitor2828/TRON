@@ -79,27 +79,48 @@ class P2PManager:
             self._threads.remove(thread)
             raise
 
-    def start(self, *, connect=True):
-        """Abre escuta e, por padrao, inicia conectores. Instancia de uso unico."""
+    def start(self, *, connect=True, listener=None):
+        """Aceita a escuta reservada pelo lobby ou cria a escuta original.
+
+        Validacao falhou: listener externo continua com o chamador.
+        Ao publicar server_socket, o manager assume o fechamento, inclusive
+        se uma etapa posterior de inicializacao falhar.
+        """
         with self._condition:
             if self._started:
                 raise RuntimeError("Use uma nova instancia para iniciar outra vez")
+            external = listener is not None
+            if external:
+                if (not isinstance(listener, socket.socket) or listener.family != socket.AF_INET
+                        or listener.getsockopt(socket.SOL_SOCKET, socket.SO_TYPE) != socket.SOCK_STREAM
+                        or not listener.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN)):
+                    raise ValueError("Listener IPv4 TCP em escuta exigido")
+                host, port = listener.getsockname()
+                expected_host, expected_port = self.players[self.player_id]
+                if port != expected_port or host not in {"0.0.0.0", expected_host}:
+                    raise ValueError("Listener difere do endpoint P2P anunciado")
+            else:
+                listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                try:
+                    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    listener.bind(self.players[self.player_id])
+                    listener.listen()
+                except Exception:
+                    listener.close()
+                    raise
             self._started = True
-            listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                listener.bind(self.players[self.player_id])
-                listener.listen()
-                listener.settimeout(0.2)
-            except Exception:
-                listener.close()
-                raise
             self.server_socket = listener
             self.running = True
-            self._spawn_locked("accept", self.accept_connections)
-            self._spawn_locked("monitor", self._monitor)
-        if connect:
-            self.connect_to_peers()
+        try:
+            listener.settimeout(0.2)
+            with self._condition:
+                self._spawn_locked("accept", self.accept_connections)
+                self._spawn_locked("monitor", self._monitor)
+            if connect:
+                self.connect_to_peers()
+        except Exception:
+            self.close()
+            raise
 
     def connect_to_peers(self):
         """Inicia um conector por ID maior; chamadas repetidas nao duplicam workers."""

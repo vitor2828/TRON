@@ -1,0 +1,249 @@
+{
+  "match_id": "1",
+  "listener_port": 51434,
+  "players": {
+    "1": [
+      "127.0.0.1",
+      51434
+    ],
+    "2": [
+      "127.0.0.1",
+      51444
+    ],
+    "3": [
+      "127.0.0.1",
+      51457
+    ],
+    "4": [
+      "127.0.0.1",
+      51459
+    ]
+  },
+  "player_id": 1,
+  "phase": "FINISHED",
+  "confirmed_tick": 22,
+  "epoch": 0,
+  "coordinator_id": 1,
+  "active_participants": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "recoveries": [],
+  "result": {
+    "winner_id": null
+  },
+  "final_hash": "8eeee234864ba725469f52369f87077c000a5a991dd4afe9c6afd338828db5a4",
+  "history": [
+    {
+      "epoch": 0,
+      "tick": 0,
+      "hash": "a549898617e426b48b3828dedaaad90225f655f846b1a9e66be169fadc8da82b"
+    },
+    {
+      "epoch": 0,
+      "tick": 1,
+      "hash": "f26707db13c5724fc45f33cb05dd0eb7d0e076188bcc1a4afb0c285c856cf444"
+    },
+    {
+      "epoch": 0,
+      "tick": 2,
+      "hash": "2ac85cb7a3fa30f2294752e83d6b2190fb3ea7dd5903b6c01da098e336a7de55"
+    },
+    {
+      "epoch": 0,
+      "tick": 3,
+      "hash": "c9dded28ae321948b38ae4f7d4df34cc42eccf400629554152a7b343afda2fd4"
+    },
+    {
+      "epoch": 0,
+      "tick": 4,
+      "hash": "46235ce9a06a94fbaf3396140beaae5fc7340ed2953fc58a7edeb38b4d49d914"
+    },
+    {
+      "epoch": 0,
+      "tick": 5,
+      "hash": "8cfc2f1e0179b3880def8e158b2fa9db239c899e7dd52238f56828e3ddbf1eb2"
+    },
+    {
+      "epoch": 0,
+      "tick": 6,
+      "hash": "2bbbfa496effd11a255f150de01d0f9898157cc9fce9e6b3ef543ab6086bd3ad"
+    },
+    {
+      "epoch": 0,
+      "tick": 7,
+      "hash": "94220023bbf0a13a4c1faa3917a52f1e765d7d44a79e279a0ba1e67b97bcfdec"
+    },
+    {
+      "epoch": 0,
+      "tick": 8,
+      "hash": "52bd29dc4e0605c8f50bcaf1c7747dcbd07863cce6afd119564b62491b7f74b9"
+    },
+    {
+      "epoch": 0,
+      "tick": 9,
+      "hash": "ea4d3e1ff7ed09543e3e62ac9f4ba48cb523f3664ecf48e1e4805510b5c50151"
+    },
+    {
+      "epoch": 0,
+      "tick": 10,
+      "hash": "f8b4374481d2b2ff7c6b55d35a95fdb3448bd2d7828b525f7dfdcde11a073de0"
+    },
+    {
+      "epoch": 0,
+      "tick": 11,
+      "hash": "12092cc6d53ea23ae29442286f11a36f853302bce2c9b637b6bb252e4919fa59"
+    },
+    {
+      "epoch": 0,
+      "tick": 12,
+      "hash": "d1111874621780f7ea512424c8a2d1ff6f023f19e99d0e373b42155b4ce84116"
+    },
+    {
+      "epoch": 0,
+      "tick": 13,
+      "hash": "214d0386bdee0dcfc6268a99a16ff1b0581b781624835d194535bac88b6d5649"
+    },
+    {
+      "epoch": 0,
+      "tick": 14,
+      "hash": "b092e475426585cce91e290c2fd86a1b8a282718c60761c29b1456911bbebe92"
+    },
+    {
+      "epoch": 0,
+      "tick": 15,
+      "hash": "0eff499a0b498ebd2c49a138409d90d9d4cf2544682a307e734c148b1e2af50f"
+    },
+    {
+      "epoch": 0,
+      "tick": 16,
+      "hash": "f4871530913c3a12cfdd62b25a2a8025bbfa7ed90b361e7f45a731e61589ba29"
+    },
+    {
+      "epoch": 0,
+      "tick": 17,
+      "hash": "8cd173cb22385077a87c965227e58ef1c8731553f0be7690cdba3aff7fc5ba2f"
+    },
+    {
+      "epoch": 0,
+      "tick": 18,
+      "hash": "03a8eb05bb753986e0c1d06dffcda01121537149ba8ce3d9d0e53a9597a9ed1b"
+    },
+    {
+      "epoch": 0,
+      "tick": 19,
+      "hash": "79f0b9fe96dc60014a51e706a827c09b1dc420ec10cc2bf0a95628c48e2dfdab"
+    },
+    {
+      "epoch": 0,
+      "tick": 20,
+      "hash": "19b3ebfdd2b99f6248effee00e14d8b77ba4cf6bc4dd3504ef8fa4b1ca3d9bdc"
+    },
+    {
+      "epoch": 0,
+      "tick": 21,
+      "hash": "94cfff6e0be3e340bf243fe2f79b21798a127ca53b02dcd2817fa0106195549d"
+    },
+    {
+      "epoch": 0,
+      "tick": 22,
+      "hash": "8eeee234864ba725469f52369f87077c000a5a991dd4afe9c6afd338828db5a4"
+    }
+  ],
+  "actions": [
+    {
+      "tick": 1,
+      "data": null
+    },
+    {
+      "tick": 2,
+      "data": null
+    },
+    {
+      "tick": 3,
+      "data": null
+    },
+    {
+      "tick": 4,
+      "data": null
+    },
+    {
+      "tick": 5,
+      "data": null
+    },
+    {
+      "tick": 6,
+      "data": null
+    },
+    {
+      "tick": 7,
+      "data": null
+    },
+    {
+      "tick": 8,
+      "data": null
+    },
+    {
+      "tick": 9,
+      "data": null
+    },
+    {
+      "tick": 10,
+      "data": null
+    },
+    {
+      "tick": 11,
+      "data": null
+    },
+    {
+      "tick": 12,
+      "data": null
+    },
+    {
+      "tick": 13,
+      "data": null
+    },
+    {
+      "tick": 14,
+      "data": null
+    },
+    {
+      "tick": 15,
+      "data": null
+    },
+    {
+      "tick": 16,
+      "data": null
+    },
+    {
+      "tick": 17,
+      "data": null
+    },
+    {
+      "tick": 18,
+      "data": null
+    },
+    {
+      "tick": 19,
+      "data": null
+    },
+    {
+      "tick": 20,
+      "data": null
+    },
+    {
+      "tick": 21,
+      "data": null
+    },
+    {
+      "tick": 22,
+      "data": null
+    }
+  ],
+  "abort_info": null,
+  "error": null,
+  "closed": true,
+  "transport_errors": {}
+}

@@ -1,0 +1,112 @@
+{
+  "player_id": 1,
+  "phase": "FINISHED",
+  "confirmed_tick": 9,
+  "epoch": 0,
+  "coordinator_id": 1,
+  "active_participants": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "recoveries": [],
+  "result": {
+    "winner_id": null
+  },
+  "final_hash": "1e3681bd02e45c66a4d58267c01ff959b4368ed3f1362c872ff53853e1259c0b",
+  "history": [
+    {
+      "epoch": 0,
+      "tick": 0,
+      "hash": "d1661bf082d3c21d37e224c1b14f9c9765d947d2c71912f08f7123fdd5c84d4d"
+    },
+    {
+      "epoch": 0,
+      "tick": 1,
+      "hash": "32c0caf63f337437b1ca9c444bb202863187923c876b2eb302599b2f8f3825a6"
+    },
+    {
+      "epoch": 0,
+      "tick": 2,
+      "hash": "dfbd2f4b8290ad175b1b116237141529f9556ef149b777d1c58ea3f66933ae1f"
+    },
+    {
+      "epoch": 0,
+      "tick": 3,
+      "hash": "ac3c8505f05f999f03b1d134f774708232169e601c6fc33399b799e4d271b909"
+    },
+    {
+      "epoch": 0,
+      "tick": 4,
+      "hash": "241d15dac84950c8249c3fbb75a54c41e50ec1b80989e2664212f741628f0a36"
+    },
+    {
+      "epoch": 0,
+      "tick": 5,
+      "hash": "6e62367436654e3d428dcd8c98cf035cc3fed4472c5e60abebbf6f3b37e66a4d"
+    },
+    {
+      "epoch": 0,
+      "tick": 6,
+      "hash": "18439831ffbe1245c5ae7207f6d1a3208b0c80a020ce79f2b395e0639106728a"
+    },
+    {
+      "epoch": 0,
+      "tick": 7,
+      "hash": "3aebd92c521b6e3db8b5077623d5509e9741296b375f957f3f11474c41023521"
+    },
+    {
+      "epoch": 0,
+      "tick": 8,
+      "hash": "39256fdecac8b79df2928b3ddb0be054c0ad1d8c31c12ab241cdd36b8705ea16"
+    },
+    {
+      "epoch": 0,
+      "tick": 9,
+      "hash": "1e3681bd02e45c66a4d58267c01ff959b4368ed3f1362c872ff53853e1259c0b"
+    }
+  ],
+  "actions": [
+    {
+      "tick": 1,
+      "data": null
+    },
+    {
+      "tick": 2,
+      "data": null
+    },
+    {
+      "tick": 3,
+      "data": null
+    },
+    {
+      "tick": 4,
+      "data": null
+    },
+    {
+      "tick": 5,
+      "data": null
+    },
+    {
+      "tick": 6,
+      "data": null
+    },
+    {
+      "tick": 7,
+      "data": null
+    },
+    {
+      "tick": 8,
+      "data": null
+    },
+    {
+      "tick": 9,
+      "data": null
+    }
+  ],
+  "abort_info": null,
+  "error": null,
+  "closed": true,
+  "transport_errors": {}
+}
