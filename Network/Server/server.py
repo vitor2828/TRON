@@ -22,6 +22,7 @@ class Partida:
     def __init__(self, id_partida, jogador):
         self.id = id_partida
         self.jogadores = [jogador]
+        self.jogador_counter = 1
 
 class Cliente :
     conexao = ""
@@ -74,22 +75,19 @@ def listar_partida():
         raise ErroProtocolo("401","Erro ao listar partidas")
 
 def entrar_partida(cliente, id_partida):
-    try:
-        with lock:
-            global partidas  
-            if id_partida not in partidas:
-                raise ErroProtocolo("402",f"A partida {id_partida} não existe.")
+    with lock:
+        global partidas  
+        if id_partida not in partidas:
+            raise ErroProtocolo("402",f"A partida {id_partida} não existe.")
+        
+        partida = partidas[id_partida]
             
-            partida = partidas[id_partida]
-            
-            if len(partida.jogadores) >= 4:
-                raise ErroProtocolo("403", "A partida já está cheia.")
+        if len(partida.jogadores) >= 4:
+            raise ErroProtocolo("403", "A partida já está cheia.")
                 
-            partida.jogadores.append(cliente)
-            print(f"{cliente.nome} entrou na partida {id_partida}.")
+        partida.jogadores.append(cliente)
+        print(f"{cliente.nome} entrou na partida {id_partida}.")
 
-    except:
-        raise ErroProtocolo("404","Erro ao entrar na partida")
 
 def receber_cliente(conn, endereco, id_cliente):
 
@@ -107,6 +105,8 @@ def receber_cliente(conn, endereco, id_cliente):
 
         print(f"Cliente {id_cliente} conectado: {clientes[id_cliente]['informacoes']}")
 
+    numeropartida = ""
+
     while True:
         msg = conn.recv(1).decode()
 
@@ -115,6 +115,7 @@ def receber_cliente(conn, endereco, id_cliente):
                 try:
                     global partida_counter
                     partida_counter += 1
+                    numeropartida = str(partida_counter)
                     criar_partida(cliente, str(partida_counter))
 
                     pacote = {
@@ -157,47 +158,75 @@ def receber_cliente(conn, endereco, id_cliente):
 
             case "3":
 
-                numeropartida = conn.recv(1).decode()
-                entrar_partida(cliente, numeropartida)
+                try:
+                    numeropartida = conn.recv(5).decode()
+                    entrar_partida(cliente, numeropartida)
 
-                for jogador in partidas[numeropartida].jogadores:
-                    pacote = {
-                        "tipo_mensagem": "1",
-                        "status": "202",
-                        "msg": f"{cliente.nome} entrou na partida"
-                    }
-
-                    envia_pacote(pacote, jogador.conexao)
-
-                if len(partidas[numeropartida].jogadores) == QUANTIDADE_CLIENTES_SALA:
                     for jogador in partidas[numeropartida].jogadores:
 
-                        info = {}
+                        if jogador.conexao != cliente.conexao:
+                            pacote = {
+                                "tipo_mensagem": "1",
+                                "status": "202",
+                                "msg": f"{cliente.nome} entrou na partida"
+                            }
 
-                        conexao_counter = 0
+                            envia_pacote(pacote, jogador.conexao)
 
-                        for outros_jogadores in partidas[numeropartida].jogadores:
-                            if outros_jogadores.conexao != jogador.conexao:
-                                info[str(conexao_counter)] = {
-                                    "ip_jogador": outros_jogadores.ip_p2p,
-                                    "porta_jogador": outros_jogadores.porta_p2p,
-                                }
-                                conexao_counter += 1
+                    if len(partidas[numeropartida].jogadores) == QUANTIDADE_CLIENTES_SALA:
 
-                        pacote = {
-                            "tipo_mensagem": "1",
-                            "status": "203",
-                            "info": info
-                        }
+                        for jogador in partidas[numeropartida].jogadores:
 
-                        envia_pacote(pacote, jogador.conexao)    
-                        print(f"Informações enviadas para partida {numeropartida}. Conexões encerradas.")
+                            info = {}
 
-                    conn.close()
-                    return
+                            conexao_counter = 0
+
+                            for index, outros_jogadores in enumerate(partidas[numeropartida].jogadores):
+                                if outros_jogadores.conexao != jogador.conexao:
+                                    info[str(index + 1)] = {
+                                        "ip_jogador": outros_jogadores.ip_p2p,
+                                        "porta_jogador": outros_jogadores.porta_p2p,
+                                        "id_partida": numeropartida,
+                                    }
+                                    conexao_counter += 1
+
+                            pacote = {
+                                "tipo_mensagem": "1",
+                                "status": "203",
+                                "info": info
+                            }
+
+                            envia_pacote(pacote, jogador.conexao)   
+                            print(f"Informações enviadas para partida {numeropartida}. Conexões encerradas.")
+
+                        conn.close()
+                        return
+                    
+                except ErroProtocolo as e:
+                    print(e)
+
+                    pacote = {
+                        "tipo_mensagem": "0",
+                        "status": e.codigo
+                    }
+
+                    envia_pacote(pacote, conn)
+                    
 
             case "4":
                 print(f"Conexão com cliente encerrada: f{conn}")
+
+                if numeropartida != "":
+
+                    comp_partida = len(partidas[numeropartida].jogadores)
+                    
+                    for i in range(comp_partida - 1, -1 , -1):
+                        if partidas[numeropartida].jogadores[i].conexao == conn:
+                            partidas[numeropartida].jogadores.pop(i)
+
+                    if len(partidas[numeropartida].jogadores) == 0:
+                        partidas.pop(numeropartida, None)
+
                 conn.close()
                 return
 
@@ -223,8 +252,6 @@ while True:
 
         thread.start()
         threads.append(thread)
-
-        print(threading.enumerate())
 
     except KeyboardInterrupt:
         print("\nFechando servidor...")
