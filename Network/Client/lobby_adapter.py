@@ -34,8 +34,6 @@ def _inteiro(value, label, minimum, maximum):
 def adaptar_lobby(retorno, config=None):
     """Valida [listener, info]. Em erro fecha o listener recebido.
 
-    Configuracao permanece no lado do jogo; deve ser igual nos quatro peers.
-    A barreira READY da sessao detecta qualquer divergencia entre eles.
     """
     if not isinstance(retorno, (list, tuple)) or len(retorno) != 2:
         raise ValueError("Retorno do lobby deve conter socket e informacoes")

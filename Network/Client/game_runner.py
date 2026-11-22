@@ -74,8 +74,6 @@ def executar_partida(result, *, automatic=False, no_render=False, report=None,
                      max_runtime=300, linger_ms=1000, crash_at=None,
                      crash_phase="before_move", leave_at=None):
     """Consome o listener de LobbyResult e devolve um relatorio da partida.
-
-    Usa a sessao v3 existente. Nao importa nem altera teste_jogo_p2p.py.
     """
     try:
         if result.listener is None:

@@ -81,10 +81,6 @@ class P2PManager:
 
     def start(self, *, connect=True, listener=None):
         """Aceita a escuta reservada pelo lobby ou cria a escuta original.
-
-        Validacao falhou: listener externo continua com o chamador.
-        Ao publicar server_socket, o manager assume o fechamento, inclusive
-        se uma etapa posterior de inicializacao falhar.
         """
         with self._condition:
             if self._started:

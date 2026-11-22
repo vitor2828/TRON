@@ -1,5 +1,4 @@
-"""Protocolo P2P TRON v3: mensagens JSON/UTF-8 terminadas por LF.
-
+"""
 Este modulo valida o FORMATO. A sessao valida estados, movimentos, barreiras,
 duplicatas, timeouts e comparacao dos hashes. Nao abre sockets nem cria threads.
 
@@ -263,12 +262,7 @@ def _check_canonical_value(value):
 
 
 def canonical_bytes(value):
-    """JSON canonico desta versao: UTF-8, chaves ordenadas, sem espacos.
-
-    Listas PRESERVAM sua ordem. O chamador deve ordenar jogadores por ID e
-    fornecer a grade por linhas, com valores padronizados. Nao passar Arena,
-    Jogador, cores de terminal ou horarios locais diretamente.
-    """
+   
     try:
         _check_canonical_value(value)
         return json.dumps(

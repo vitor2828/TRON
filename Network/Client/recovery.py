@@ -165,10 +165,7 @@ class RecoveryMixin:
         self._suspect(player_id)
 
     def _begin_detection(self, candidates):
-        """Um hash ausente pode ser consequencia de outro MOVE ausente.
-
-        Sonda todos os ausentes antes de concluir que houve varias quedas.
-        """
+    
         self._detection = dict(candidates=set(candidates), alive=set())
         self.phase = "FAILURE_CHECK"
         self._deadline = self._clock() + self.config.get("probe_timeout_ms", 1500) / 1000

@@ -23,16 +23,7 @@ SNAPSHOT_FORMAT = RULES_VERSION
 
 
 class GameSession(RecoveryMixin):
-    """Controla mensagens e barreiras; simulation calcula o jogo.
-
-    config exige rules_version (str), tick_ms, prepare_timeout_ms e
-    phase_timeout_ms (inteiros positivos). Valores extras devem ser JSON
-    canonico e identicos em todos. Tempo local so controla prazos, nao a arena.
-
-    snapshot: {tick, players, grid, result}. players contem {id,x,y,direction,
-    alive}; grid usa "EMPTY", "WALL" ou ID inteiro do dono do rastro.
-    result e None, ou {"winner_id": ID} / {"winner_id": None} para empate.
-    """
+   
 
     # 1. Configuracao comum, copias de estado e estruturas locais.
     def __init__(self, player_id, participants, match_id, config,

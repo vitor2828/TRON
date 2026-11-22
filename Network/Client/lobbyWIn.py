@@ -241,9 +241,6 @@ def trata_menu(cliente):
 
 def lobby(host=HOST_SERVIDOR, port=PORT_SERVIDOR, *, nome=None, entrada=None):
     """Retorno original preservado: [socket_p2p, informacoes_partida].
-
-    entrada e uma funcao opcional apenas para automatizar o novo teste.
-    Uma chamada por vez, mantendo o modelo de filas e globais dos colegas.
     """
     global fila_menu, fila_partida, informacoes_partida, _erro_lobby, _entrada_teste
     fila_menu, fila_partida = queue.Queue(), queue.Queue()
