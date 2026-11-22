@@ -34,7 +34,7 @@ def recebe_mensagens(cliente):
             dados_brutos = cliente.recv(2048).decode('utf-8')
             
             if not dados_brutos:
-                print("Servidor encerrou a conexão.")
+                print("Servidor encerrou a conexão. Abra o cliente novamente")
                 break
 
             buffer += dados_brutos
@@ -55,6 +55,7 @@ def recebe_mensagens(cliente):
 
         except socket.timeout:
             continue
+
         except json.JSONDecodeError as e:
             print(f"[ERRO] JSON inválido recebido: {e} | Conteúdo: {linha}")
         except OSError as e:
@@ -77,13 +78,13 @@ def trata_partida():
                 fila_partida.put(None)
 
                 global informacoes_partida
-
                 informacoes_partida = msg["info"]
                 break
 
 def trata_menu(cliente):
 
     em_partida = False
+    id_partida = ""
 
     while not evento_encerrar.is_set():
 
@@ -120,6 +121,9 @@ def trata_menu(cliente):
 
                     msg = fila_menu.get()
 
+                    if msg is None:
+                        break
+
                     if msg["status"] == "401":
                         print("Houve um erro ao listar as partidas... Por favor, tente novamente.")
                         continue;
@@ -144,12 +148,34 @@ def trata_menu(cliente):
                     
                     cliente.sendall(comando.encode())
                     msg = input("Digite o ID da partida que você quer entrar: ")
+                    id_partida = msg
                     cliente.sendall(msg.encode('utf-8'))
 
+                    msg = fila_menu.get()
+
+                    if msg is None:
+                        break
+
+                    if (msg["status"] == "402"):
+                        print("A partida não existe")
+                        em_partida = False
+
+                    if (msg["status"] == "403"):
+                        print("A partida está cheia")
+                        em_partida = False
+
                 case "4":
-                    cliente.sendall(comando.encode())
+
+                    pacote = {
+                        "comando": comando,
+                        "id": id_partida
+                    }
+
+                    msg = json.dumps(pacote) + "\n"
+                    cliente.sendall(msg.encode('utf-8'))
+
                     cliente.close()
-                    sys.exit(0)
+                    os._exit(0)
 
                 case _:
                     limpa_tela()
@@ -173,7 +199,7 @@ def lobby():
         print("Houve uma falha na conexão ao servidor. Tente novamente.")
         socket_p2p.close()
         cliente.close()
-        sys.exit(1)
+        os._exit(1)
 
 
     print("Seja bem-vindo! Primeiro, qual seu nome?")
@@ -189,30 +215,29 @@ def lobby():
     cliente.sendall(msg.encode('utf-8'))
     limpa_tela()
 
-    thread = threading.Thread(
+    t_mensagem = threading.Thread(
         target=recebe_mensagens,
         args=[cliente],
         daemon=True
     )
 
-    thread.start()
-
-    print("MENU:\n\n")
-    printa_menu()
-
-    thread = threading.Thread(
+    t_menu = threading.Thread(
         target = trata_menu,
         args=[cliente],
         daemon=True
     )
 
-    thread.start()
+    t_mensagem.start()
+    t_menu.start()
+
+    print("MENU:\n\n")
+    printa_menu()
 
     trata_partida()
 
+    t_mensagem.join()
+    t_menu.join()
     cliente.close()
 
     return [socket_p2p, informacoes_partida]
-
-print(lobby())
 
