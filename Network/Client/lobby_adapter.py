@@ -45,8 +45,14 @@ def adaptar_lobby(retorno, config=None):
         if type(match_id) is not str or not 1 <= len(match_id) <= 64 or match_id.strip() != match_id:
             raise ValueError("ID de partida invalido")
         local = _inteiro(info["player_id"], "player_id", 1, 4)
-        if type(info["jogadores"]) is not dict or set(info["jogadores"]) != {"1", "2", "3", "4"}:
-            raise ValueError("Exigidos quatro IDs de jogador, incluindo o local")
+        if (
+            type(info["jogadores"]) is not dict
+            or set(info["jogadores"]) not in (
+                {"1", "2", "3"},
+                {"1", "2", "3", "4"},
+            )
+        ):
+            raise ValueError("Exigidos três ou quatro IDs de jogador")
         players = {}
         for key, player in info["jogadores"].items():
             if type(player) is not dict or set(player) != {"ip_jogador", "porta_jogador"}:
@@ -58,7 +64,9 @@ def adaptar_lobby(retorno, config=None):
             if ip.is_unspecified or ip.is_multicast or str(ip) == "255.255.255.255":
                 raise ValueError("IPv4 nao pode ser usado como destino P2P")
             players[int(key)] = (str(ip), _inteiro(player["porta_jogador"], "porta", 1, 65535))
-        if len(set(players.values())) != 4:
+        if local not in players:
+            raise ValueError("ID local não pertence à partida")
+        if len(set(players.values())) != len(players):
             raise ValueError("Endpoints repetidos")
         values = dict(DEFAULT_CONFIG)
         if config is not None:
