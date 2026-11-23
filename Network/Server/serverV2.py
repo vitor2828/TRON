@@ -264,19 +264,28 @@ def receber_cliente(conn, endereco, id_cliente):
                         envia_pacote(pacote, conn)
                     
                 case "4":
+                    with lock:
+                        partida = partidas.get(cliente.partida_id)
 
-                    if len(partidas[numeropartida].jogadores) < 3:
-                        pacote = {
-                            "tipo_mensagem": "0",
-                            "status": "406"
-                        }
+                        if (
+                            partida is None
+                            or partida.iniciada
+                            or not 3 <= len(partida.jogadores) <= 4
+                        ):
+                            jogadores = None
+                        else:
+                            partida.iniciada = True
+                            jogadores = list(partida.jogadores)
+                            numeropartida = partida.id
 
-                        envia_pacote(pacote, conn)
+                    if jogadores is None:
+                        envia_pacote(
+                            {"tipo_mensagem": "0", "status": "406"},
+                            conn,
+                        )
                         continue
 
-                    jogadores = partidas[numeropartida].jogadores
                     trocar_pares(jogadores, numeropartida)
-                    conn.close()
                     return
                 case "5":
                     print(f"Conexao com cliente encerrada: {conn}", flush=True)
