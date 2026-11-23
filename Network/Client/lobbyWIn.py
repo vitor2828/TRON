@@ -8,7 +8,7 @@ import json
 import threading
 import queue
 
-HOST_SERVIDOR = '127.0.0.1' ## criar um processo de descobrimento de servidor na rede local
+HOST_SERVIDOR = '127.0.0.1'
 PORT_SERVIDOR = 5000
 
 fila_menu = queue.Queue()
@@ -22,7 +22,6 @@ class LobbyCancelled(Exception):
 
 _erro_lobby = None
 _entrada_teste = None
-
 
 def _encerrar(erro=None):
     global _erro_lobby
@@ -84,7 +83,8 @@ def printa_menu():
     print("1 - Criar partida\n")
     print("2 - Listar partidas\n")
     print("3 - Entrar em partida\n")
-    print("4 - Sair\n")
+    print("4 - Iniciar partida\n")
+    print("5 - Sair")
 
 def recebe_mensagens(cliente):
     cliente.settimeout(0.5)
@@ -217,19 +217,35 @@ def trata_menu(cliente):
                         break
 
                     if msg["status"] == "204":
+                        print("Entrou na partida!")
                         em_partida = True
                     if msg["status"] == "404":
                         print("Voce ja esta em uma partida")
                     if (msg["status"] == "402"):
                         print("A partida não existe")
                         em_partida = False
-
                     if (msg["status"] == "403"):
                         print("A partida está cheia")
                         em_partida = False
 
                 case "4":
+                    if not em_partida:
+                        print("O jogador não está em nenhuma partida.")
+                        continue
+
                     cliente.sendall(b"4")
+
+                    msg = fila_menu.get()
+
+                    if msg is None:
+                        continue
+
+                    if msg["status"] == "406":
+                        print("Para começar, a partida deve ter entre 3 e 4 jogadores")
+                        continue
+
+                case "5":
+                    cliente.sendall(b"5")
                     _encerrar()
                     break
 

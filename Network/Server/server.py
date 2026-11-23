@@ -2,7 +2,7 @@ import socket
 import threading
 import json
 
-HOST = '127.0.0.1'
+HOST = '0.0.0.0'
 PORT = 5000
 QUANTIDADE_CLIENTES_SALA = 4
 
@@ -87,6 +87,33 @@ def entrar_partida(cliente, id_partida):
                 
         partida.jogadores.append(cliente)
         print(f"{cliente.nome} entrou na partida {id_partida}.")
+
+def trocar_pares(numeropartida, conn):
+    for jogador in partidas[numeropartida].jogadores:
+
+        info = {}
+
+        conexao_counter = 0
+
+        for index, outros_jogadores in enumerate(partidas[numeropartida].jogadores):
+            if outros_jogadores.conexao != jogador.conexao:
+                info[str(index + 1)] = {
+                    "ip_jogador": outros_jogadores.ip_p2p,
+                    "porta_jogador": outros_jogadores.porta_p2p,
+                    "id_partida": numeropartida,
+                }
+            conexao_counter += 1
+
+            pacote = {
+                "tipo_mensagem": "1",
+                "status": "203",
+                "info": info
+            }
+
+            envia_pacote(pacote, jogador.conexao)   
+            print(f"Informações enviadas para partida {numeropartida}. Conexões encerradas.")
+
+    conn.close()
 
 
 def receber_cliente(conn, endereco, id_cliente):
@@ -175,31 +202,7 @@ def receber_cliente(conn, endereco, id_cliente):
 
                     if len(partidas[numeropartida].jogadores) == QUANTIDADE_CLIENTES_SALA:
 
-                        for jogador in partidas[numeropartida].jogadores:
-
-                            info = {}
-
-                            conexao_counter = 0
-
-                            for index, outros_jogadores in enumerate(partidas[numeropartida].jogadores):
-                                if outros_jogadores.conexao != jogador.conexao:
-                                    info[str(index + 1)] = {
-                                        "ip_jogador": outros_jogadores.ip_p2p,
-                                        "porta_jogador": outros_jogadores.porta_p2p,
-                                        "id_partida": numeropartida,
-                                    }
-                                    conexao_counter += 1
-
-                            pacote = {
-                                "tipo_mensagem": "1",
-                                "status": "203",
-                                "info": info
-                            }
-
-                            envia_pacote(pacote, jogador.conexao)   
-                            print(f"Informações enviadas para partida {numeropartida}. Conexões encerradas.")
-
-                        conn.close()
+                        trocar_pares(numeropartida, conn)
                         return
                     
                 except ErroProtocolo as e:
@@ -211,9 +214,13 @@ def receber_cliente(conn, endereco, id_cliente):
                     }
 
                     envia_pacote(pacote, conn)
-                    
 
             case "4":
+                trocar_pares()
+                return
+                    
+
+            case "5":
                 print(f"Conexão com cliente encerrada: f{conn}")
 
                 if numeropartida != "":

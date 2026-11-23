@@ -136,6 +136,20 @@ def _remover_cliente(cliente, id_cliente):
                         not any(d["cliente"] in partida.jogadores for d in clientes.values())):
                     partidas.pop(partida.id, None)
 
+def trocar_pares(jogadores, numeropartida):
+    composicao = {
+        str(index + 1): {"ip_jogador": j.ip_p2p, "porta_jogador": j.porta_p2p}
+        for index, j in enumerate(jogadores)
+    }
+    for index, jogador in enumerate(jogadores):
+            info = {"id_partida": numeropartida, "player_id": index + 1, "jogadores": composicao}
+            pacote = {"tipo_mensagem": "1", "status": "203", "info": info}
+            try:
+                envia_pacote(pacote, jogador.conexao)
+            except OSError:
+                _fechar(jogador.conexao)
+                print(f"Informacoes enviadas para partida {numeropartida}.", flush=True)
+
 
 def receber_cliente(conn, endereco, id_cliente):
     cliente = None
@@ -235,21 +249,7 @@ def receber_cliente(conn, endereco, id_cliente):
                                     _fechar(jogador.conexao)
 
                         if iniciou:
-
-                            composicao = {
-                                str(index + 1): {"ip_jogador": j.ip_p2p, "porta_jogador": j.porta_p2p}
-                                for index, j in enumerate(jogadores)
-                            }
-                            for index, jogador in enumerate(jogadores):
-                                info = {"id_partida": numeropartida, "player_id": index + 1,
-                                        "jogadores": composicao}
-                                pacote = {"tipo_mensagem": "1", "status": "203", "info": info}
-                                try:
-                                    envia_pacote(pacote, jogador.conexao)
-                                except OSError:
-                                    _fechar(jogador.conexao)
-                            print(f"Informacoes enviadas para partida {numeropartida}.", flush=True)
-
+                            trocar_pares(jogadores, numeropartida)
                             conn.close()
                             return
                     
@@ -263,8 +263,22 @@ def receber_cliente(conn, endereco, id_cliente):
 
                         envia_pacote(pacote, conn)
                     
-
                 case "4":
+
+                    if len(partidas[numeropartida].jogadores) < 3:
+                        pacote = {
+                            "tipo_mensagem": "0",
+                            "status": "406"
+                        }
+
+                        envia_pacote(pacote, conn)
+                        continue
+
+                    jogadores = partidas[numeropartida].jogadores
+                    trocar_pares(jogadores, numeropartida)
+                    conn.close()
+                    return
+                case "5":
                     print(f"Conexao com cliente encerrada: {conn}", flush=True)
                     return
                 case _:
