@@ -1,588 +1,1921 @@
-\documentclass[12pt,a4paper]{article}
-
-% --------------------------------------------------
-% PACOTES
-% --------------------------------------------------
-
+\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[brazil]{babel}
-
-\usepackage{geometry}
-\geometry{
-    a4paper,
-    left=3cm,
-    right=2cm,
-    top=3cm,
-    bottom=2cm
-}
-
-\usepackage{setspace}
-\onehalfspacing
-
-\usepackage{indentfirst}
-\setlength{\parindent}{1.25cm}
-
-\usepackage{graphicx}
+\usepackage{babel}
+\babelprovide[import=pt,main]{portuguese}
+\usepackage{amsmath,amssymb,graphicx,booktabs,float,indentfirst,setspace,geometry,hyperref}
+\usepackage{caption}
 \usepackage{float}
-\usepackage{booktabs}
-\usepackage{array}
-\usepackage{longtable}
-
-\usepackage{xcolor}
-
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=black,
-    citecolor=black,
-    urlcolor=blue
-}
-
-% Código-fonte
-\usepackage{listings}
-
-\definecolor{codegray}{rgb}{0.95,0.95,0.95}
-
-\lstset{
-    backgroundcolor=\color{codegray},
-    basicstyle=\ttfamily\small,
-    breaklines=true,
-    frame=single,
-    numbers=left,
-    numberstyle=\tiny,
-    showstringspaces=false
-}
-
-% --------------------------------------------------
-% INFORMAÇÕES DO RELATÓRIO
-% --------------------------------------------------
-
-\title{
-    \textbf{Relatório de Produção de Software}\\
-    \large TRON
-}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows.meta}
+\geometry{left=3cm,right=2cm,top=2.5cm,bottom=2cm}
+\setstretch{1.05}
+\setlength{\emergencystretch}{2em}
+\widowpenalty=10000
+\clubpenalty=10000
+\captionsetup{font=small,labelfont=bf}
+\hypersetup{hidelinks}
+\title{\textbf{Projeto e Implementação de um Protocolo de Camada de Aplicação Híbrido para o Jogo Multijogador em Tempo Real TRON}}
 
 \author{
-    Danilo Lins\\
-    Nome do Autor 2\\
-    Nome do Autor 3
+  \begin{tabular}{c @{\hspace{2cm}} c} % O 2cm controla a distância horizontal entre as colunas
+    Danilo Lins Castro & Eduardo Sankievicz Lima \\
+    \small Matrícula: 251019735 & \small Matrícula: 251035102 \\[1.5em] % O [1.5em] controla o espaço vertical entre as linhas
+    João Pedro Barros Silva Azevedo & João Vitor da Silva Lima \\
+    \small Matrícula: 251004311 & \small Matrícula: 251023101
+  \end{tabular}
 }
-
-\date{\today}
-
-
-% ==================================================
-% DOCUMENTO
-% ==================================================
-
+\date{\small Universidade de Brasília — Departamento de Ciência da Computação\\Redes de Computadores — Turma 03, 2026/2}
 \begin{document}
-
-% --------------------------------------------------
-% CAPA
-% --------------------------------------------------
-
-\begin{titlepage}
-
-    \centering
-
-    {\large Universidade de Brasília / CIC}\\[0.5cm]
-    {\large Ciência da Computação}\\[2cm]
-
-    {\Large\textbf{RELATÓRIO DE PRODUÇÃO DE JOGO MULTIJOGADOR}}\\[1cm]
-
-    {\LARGE\textbf{TRON}}\\[2cm]
-
-    \begin{flushright}
-        \begin{minipage}{0.65\textwidth}
-            Relatório apresentado à disciplina
-            \textit{Redes de Computadores}, como requisito
-            para avaliação do desenvolvimento do trabalho final.
-        \end{minipage}
-    \end{flushright}
-
-    \vfill
-
-    Danilo Lins Castro - 251019735\\
-    Eduardo Sankievicz Lima - 251035102\\
-    João Pedro Barros Silva Azevedo - 251004311\\
-    João Vitor da Silva Lima - 251023101
-
-    \vfill
-
-    Brasília -- DF\\
-    2026
-
-\end{titlepage}
-
-
-% --------------------------------------------------
-% RESUMO
-% --------------------------------------------------
-
+\maketitle
 \begin{abstract}
-
-Este relatório apresenta o desenvolvimento do software
-\textit{Nome do Projeto}, descrevendo seus objetivos,
-requisitos, tecnologias utilizadas, decisões de projeto,
-processo de implementação e resultados obtidos.
-
-O sistema foi desenvolvido utilizando as tecnologias
-\textit{Tecnologia 1}, \textit{Tecnologia 2} e
-\textit{Tecnologia 3}. Durante o desenvolvimento foram
-aplicados conceitos relacionados à engenharia de software,
-arquitetura de sistemas, programação e testes.
-
-\textbf{Palavras-chave:} desenvolvimento de software;
-engenharia de software; programação; sistemas.
+Este relatório apresenta o desenvolvimento de uma implementação multijogador em rede local do jogo TRON, realizada como projeto da disciplina de Redes de Computadores da Universidade de Brasília. O jogo consiste em uma arena bidimensional na qual os participantes controlam motos que se deslocam continuamente, deixando rastros permanentes e sendo eliminados ao colidir com obstáculos, rastros ou outros jogadores. O projeto utiliza uma arquitetura híbrida, combinando um servidor centralizado para o gerenciamento de partidas e uma comunicação direta entre os jogadores durante sua execução. Para viabilizar essa comunicação, foi desenvolvido um protocolo de aplicação responsável pela troca de mensagens, organização das partidas e sincronização dos participantes. O desenvolvimento envolveu decisões relacionadas à escolha do protocolo de transporte, ao gerenciamento do estado compartilhado e ao tratamento de falhas de comunicação. Este relatório descreve a arquitetura implementada, a especificação do protocolo de aplicação, as principais decisões de projeto e as dificuldades encontradas durante o desenvolvimento, relacionando a implementação prática aos conceitos estudados na disciplina.
 
 \end{abstract}
 
-
-% --------------------------------------------------
-% SUMÁRIO
-% --------------------------------------------------
-
-\tableofcontents
-
-\newpage
-
-
-% ==================================================
-% 1. INTRODUÇÃO
-% ==================================================
-
 \section{Introdução}
+\textbfO O desenvolvimento de aplicações multijogador em rede envolve desafios relacionados à comunicação entre processos, à sincronização de informações e ao gerenciamento de conexões entre diferentes dispositivos. Em jogos de tempo real, esses desafios tornam-se especialmente relevantes, uma vez que atrasos na transmissão de mensagens e falhas de comunicação podem comprometer a consistência do estado compartilhado entre os participantes.
 
-O desenvolvimento de software envolve diferentes etapas,
-desde a definição do problema até a implementação e
-validação da solução.
+O jogo consiste em uma arena bidimensional na qual os jogadores controlam motos que se deslocam continuamente e deixam rastros permanentes. O objetivo de cada participante é permanecer na partida sem colidir com os rastros, com os limites da arena ou com outros jogadores, sendo declarado vencedor o último jogador restante.
 
-Este relatório apresenta o processo de desenvolvimento do
-projeto \textit{Nome do Projeto}, desenvolvido no contexto
-da disciplina \textit{Nome da Disciplina}.
+Para a implementação do sistema, foi adotada uma arquitetura híbrida, combinando características dos modelos cliente-servidor e *peer-to-peer* (P2P). Nessa arquitetura, um servidor centralizado, denominado servidor de lobby, é responsável pelo gerenciamento das partidas e pela identificação dos participantes. Após o início de uma partida, a comunicação passa a ocorrer diretamente entre os jogadores, sem a necessidade de intermediação do servidor de lobby. Essa separação permite que as partidas em andamento sejam independentes da disponibilidade do servidor central.
 
-O projeto tem como finalidade solucionar
-\textbf{descrever brevemente o problema que o software
-resolve}.
+Além da definição da arquitetura, o desenvolvimento exigiu a elaboração de um protocolo de aplicação para estabelecer as regras de comunicação entre os processos, bem como a definição de mecanismos para sincronização do estado do jogo e tratamento de falhas. Dessa forma, este relatório apresenta a arquitetura proposta, o funcionamento dos principais componentes do código, a especificação final do protocolo de aplicação e a justificativa da escolha do protocolo de transporte. Por fim, são discutidas as principais decisões de projeto e as dificuldades encontradas durante o desenvolvimento.
 
-Ao longo deste relatório são apresentados os objetivos do
-projeto, as tecnologias utilizadas, a metodologia adotada,
-a implementação do sistema, os testes realizados e os
-resultados obtidos.
+\section{Arquitetura do Jogo e Decisões de Projeto}
+\subsection{Topologia híbrida (Lobby e P2P)}
+O lobby, responsável pela organização de partidas e pela união dos jogadores, foi feito seguindo a arquitetura cliente-servidor. Dessa maneira, há um servidor central, inicialmente configurado em um endereço IP e em uma porta à escolha do usuário, que recebe e responde todas as mensagens dos clientes. Assim, para cada jogador conectado, cria-se uma \textit{thread} para atendê-lo concorrentemente. Por fim, ao iniciar a partida, são passadas as informações de cada jogador para seus pares, de modo a estabelecer uma conexão P2P independente e finalizar a comunicação com o servidor.
+
+Durante a partida, os jogadores formam uma topologia de malha completa (\textit{full mesh}), na qual cada participante mantém uma conexão TCP bidirecional com cada um dos demais. Para evitar conexões duplicadas, o participante de menor identificador inicia a conexão com o de maior identificador. As mensagens do jogo são trocadas diretamente entre os peers, sem intermediação do servidor.
+
+Cada peer mantém uma cópia completa da arena e executa localmente a mesma simulação determinística. A cada ciclo, os participantes compartilham suas propostas de movimento, calculam os efeitos sobre a arena e comparam hashes dos estados resultantes antes de confirmar o avanço. Assim, a comunicação transmite as ações e as confirmações necessárias à sincronização, em vez de enviar continuamente a arena completa.
+
+Um dos peers também exerce a função de coordenador de recuperação, organizando o acordo entre os sobreviventes quando ocorre uma desconexão inesperada. Esse papel não centraliza o cálculo normal do jogo, que permanece distribuído. Após a formação da malha, a partida é independente da disponibilidade do servidor de lobby.
+
+\subsection{Escolha do Protocolo de Transporte}
+Foi escolhido o protocolo TCP tanto para a comunicação com o servidor de lobby quanto para a comunicação direta entre os jogadores. Essa escolha se deve à necessidade de entrega confiável e ordenada das mensagens utilizadas na preparação da partida, na troca de movimentos e na confirmação dos estados calculados.
+
+Como a execução foi projetada para uma rede local, espera-se uma latência reduzida, tornando aceitável o custo das confirmações e retransmissões do TCP. Entretanto, esse ambiente não elimina atrasos, perdas ou falhas de conexão. A aplicação utiliza prazos de espera e mecanismos de recuperação para tratar situações em que a comunicação deixa de progredir.
+
+O UDP permitiria enviar datagramas sem estabelecer uma conexão, mas não oferece garantias de entrega ou ordenação. Para utilizá-lo no modelo de sincronização adotado, seria necessário implementar mecanismos adicionais de confirmação, retransmissão, identificação de mensagens duplicadas e controle de ordem. Essa complexidade não apresentou uma vantagem suficiente para o escopo do projeto.
+
+Assim, o TCP simplifica o transporte das mensagens e permite concentrar a implementação nas regras do jogo e na sincronização distribuída. Como ele fornece um fluxo de bytes, a aplicação ainda precisa delimitar suas mensagens. Além disso, a entrega pelo TCP não substitui a confirmação dos estados por hashes: essa verificação pertence ao protocolo de aplicação.
+
+%\subsection{Mecanismo de Sincronização e Autoridade de Estado}
+%Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris tincidunt volutpat mi, at maximus magna volutpat ut. Proin tristique sem id dui malesuada, sit amet venenatis lectus dictum. Fusce elementum, dui sit amet condimentum imperdiet, nisi neque tincidunt metus, ac volutpat magna eros ac leo. Quisque placerat non elit nec sagittis. Sed auctor sollicitudin diam, faucibus suscipit est vehicula eget. Pellentesque congue tortor ex, quis ultrices enim eleifend id. Quisque ut diam a sapien faucibus scelerisque.
+
+%\subsection{Dinamização de Endereços e Execução Distribuída}
+%Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris tincidunt volutpat mi, at maximus magna volutpat ut. Proin tristique sem id dui malesuada, sit amet venenatis lectus dictum. Fusce elementum, dui sit amet condimentum imperdiet, nisi neque tincidunt metus, ac volutpat magna eros ac leo. Quisque placerat non elit nec sagittis. Sed auctor sollicitudin diam, faucibus suscipit est vehicula eget. Pellentesque congue tortor ex, quis ultrices enim eleifend id. Quisque ut diam a sapien faucibus scelerisque.
+
+\section{Especificação do Protocolo de Aplicação}
+
+\subsection{Do lobby}
+
+O lobby é a fase inicial do jogo, apresentada ao usuário por meio de um menu no terminal quando executa o programa. A grosso modo, sua função principal é reunir os clientes por meio de um servidor conhecido por todos, posteriormente permitindo o estabelecimento de uma conexão P2P entre cada par. Além disso, atua na organização de jogadores e partidas, de forma a tratá-los a depender da ação requisitada.
+
+\subsubsection{Criação das partidas}
+
+A primeira opção do menu corresponde à criação de uma nova partida. O servidor, ao receber esse comando do jogador, instancia uma partida, a adiciona à lista de partidas e comunica, via impressão na tela, o nome do jogador responsável. Vale ressaltar que, após o fim desse processo, o jogador que o solicitou é automaticamente adicionado e recebe uma \textit{flag} \textit{em-partida}, que o impede de criar uma outra partida sem antes sair da atual. 
+
+Na lista, cada registro é unicamente identificado com um ID, um número incrementado à medida que novas partidas são criadas. Disso, explicita-se que, ao excluir partidas, esse número não será subtraído, então a ordem não segue uma contagem uniforme, embora seja, de fato, crescente.
+
+\subsubsection{Listagem das partidas}
+
+Outra ação possível é listar todas as partidas armazenadas no servidor. Ao efetuar essa operação, o cliente recebe um dicionário cuja chave é o ID da partida. Cada elemento contém uma lista de jogadores e seu comprimento, para que não haja cálculos extras no cliente. Ao ser recebido, o dicionário é convertido e traduzido para ser mostrado em tela, de forma a imprimir o ID da partida, o número e o nome do jogador. É importante ressaltar que, no caso do jogador, esse número não é o ID: trata-se de uma contagem arbitrária feita apenas com a lista enviada.
+
+\subsubsection{Entrada na partida}
+
+O procedimento para entrar em partida, quando comparado aos outros, é um tanto mais complicado. Após escolher a opção correspondente no menu, o jogador deve digitar o ID da partida em que deseja entrar. Assim, é necessário que ele faça a listagem das partidas antes e cheque o ID desejado.
+
+Depois, o servidor recebe o pedido e avalia se o novo jogador pode entrar na partida. Para isso, há dois critérios principais: primeiro, a existência da partida, que checa se o ID corresponde a algum registro da lista; segundo, se a partida desejada não atingiu o máximo de jogadores. Caso sejam cumpridos, o servidor adiciona o cliente à partida, comunicando o fato aos outros jogadores. Caso contrário, sobe uma exceção e envia a falha para o cliente, que a processará e mostrará a causa no terminal.
+
+Por último, note que a \textit{flag} \textit{em-partida} também é essencial para essa porção do protocolo. Disso, caso o jogador já esteja em outra partida, deve primeiro sair da atual para entrar na nova.
+
+\subsubsection{Saída controlada}
+
+Ao contrário de uma saída indesejada, que ocorre, por exemplo, quando o cliente aborta o programa com \textit{CTRL + C} ou se desconecta do servidor, a saída controlada é uma opção do menu e permite que o jogador, por sua plena vontade, saia de uma partida e finalize o programa. 
+
+O servidor, ao receber o comando, verifica se o jogador estava em uma partida. Se sim, deve removê-lo e comunicar aos outros componentes. Além disso, caso o número de jogadores se torne zero, também exclui a partida, para que não haja salas sem jogadores.
 
 
-% ==================================================
-% 2. OBJETIVOS
-% ==================================================
+\subsubsection{Formato Geral e Enquadramento das Mensagens}
+As mensagens do servidor, representadas em JSON, codificadas com UTF-8 e delimitadas via quebra de linha, são estruturadas em um pacote com obrigatoriamente dois campos: \textit{tipo-mensagem} e \textit{status}. O primeiro distingue a mensagem entre respostas de menu e atualizações da partida, essencial para que não haja confusão ao chegar no cliente. O segundo, por sua vez, é um código numérico que comunica e explica o resultado da requisição. Ele foi padronizado de maneira semelhante ao HTTP, em que números próximos ao 200 comunicam um sucesso, enquanto os próximos a 400, uma falha. Com isso, ao chegar no cliente, ele é traduzido e mostrado ao usuário de maneira acessível. A seguir, há uma tabela que contém todos os códigos e seus significados:
 
-\section{Objetivos}
+\begin{table}[h!]
+    \centering
+    \caption{Códigos numéricos do protocolo de aplicação}
+    \label{tab:codigos_protocolo}
+    \begin{tabular}{|c|l|}
+        \hline
+        \textbf{Código Numérico} & \multicolumn{1}{c|}{\textbf{Significado}} \\ \hline
+        200 & Partida criada com sucesso\\ \hline
+        201 & Partidas listadas com sucesso \\ \hline
+        202 & Outro jogador entrou na partida \\ \hline
+        203 & Final da fase de lobby \\ \hline
+        204 & Jogador entrou na partida \\ \hline
+        400 & Erro ao criar a partida \\ \hline
+        401 & Erro ao listar as partidas \\ \hline
+        402 & A partida não existe \\ \hline
+        403 & A partida está cheia \\ \hline
+        404 & Jogador já está em outra partida \\ \hline 
+        406 & A partida tem menos de 3 jogadores \\ \hline
+    \end{tabular}
+\end{table}
 
-\subsection{Objetivo geral}
+Além disso, algumas mensagens possuem um \textit{payload} opcional caso precisem transmitir maior carga de informação. Por exemplo, ao listar as partidas, há o campo "partidas", que contém o respectivo dicionário para ser operado no cliente.
 
-Desenvolver um software capaz de
-\textbf{descrever aqui o objetivo principal do sistema}.
+Agora, ao tratar do cliente, a implementação foi bem mais simples: visto que o único tipo de mensagem enviado é o comando no menu, bastou codificá-lo e enviá-lo ao servidor. Embora excessivamente reduzida, essa abordagem se provou, sobretudo, funcional, já que não houve maiores complicações. A seguir, há a tabela que relaciona o comando à ação do menu:
 
-\subsection{Objetivos específicos}
+\begin{table}[h!]
+    \centering
+    \caption{Comandos do cliente para o servidor}
+    \label{tab:codigos_protocolo}
+    \begin{tabular}{|c|l|}
+        \hline
+        \textbf{Comando} & \multicolumn{1}{c|}{\textbf{Ação}} \\ \hline
+        1 & Criar partida\\ \hline
+        2 & Listar partidas \\ \hline
+        3 & Entrar em uma partida \\ \hline
+        4 & Iniciar partida \\ \hline
+        5 & Sair \\ \hline
+    \end{tabular}
+\end{table}
 
-Os objetivos específicos do projeto são:
+\subsubsection{Tratamento de Exceções e Mensagens Anômalas}
 
-\begin{itemize}
-    \item implementar \textbf{funcionalidade 1};
-    \item implementar \textbf{funcionalidade 2};
-    \item desenvolver \textbf{funcionalidade 3};
-    \item aplicar conceitos de engenharia de software;
-    \item realizar testes para verificar o funcionamento
-    do sistema.
-\end{itemize}
+No lado do servidor, criou-se, à priori, uma classe \textit{ErroProtocolo}, que estende a classe \textit{Exception} e permite a inserção de códigos no padrão estipulado pelo protocolo. A seguir, há a estrutura dessa classe:
 
+\par\medskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
 
-% ==================================================
-% 3. REQUISITOS
-% ==================================================
+class ErroProtocolo(Exception):
+    def __init__(self, codigo, mensagem=""):
+        self.codigo = codigo
+        super().__init__(mensagem)
+        
+\end{verbatim}
+\end{minipage}
+\par\medskip
 
-\section{Requisitos do sistema}
+O código das exceções segue, justamente, o padrão mostrado na Tabela 1, especificamente os das falhas, isto é, os códigos próximos a 400. Dessa maneira, a exceção é empacotada em uma mensagem do protocolo e enviada ao cliente.
 
-\subsection{Requisitos funcionais}
+Do outro lado, o cliente receberá a mensagem, desempacotará o JSON e processará o campo \textit{status}, de forma a direcionar o fluxo de execução de acordo com seu significado. Isso pode ocorrer tanto imprimindo mensagens de erro, confirmando ações do jogador ou avançando na máquina de estados.
 
-Os requisitos funcionais descrevem as funcionalidades que
-o sistema deve oferecer.
+Quanto a mensagens anômalas, há, na função para receber pacotes, condicionais que analisam sua forma geral, como tamanho, tipo e conteúdo. Isso, além de fazer uma triagem inicial da mensagem, garante que informações corrompidas ou incoerentes com o proposto pelo protocolo sejam filtradas.
+
+\subsection{Das partidas}
+
+Após receberem do lobby os identificadores, endereços IP e portas dos participantes, os jogadores estabelecem uma malha completa de conexões TCP. Cada peer comunica-se diretamente com todos os demais, sem encaminhar as mensagens pelo servidor de lobby. As mensagens são representadas em JSON, codificadas em UTF-8 e delimitadas por uma quebra de linha, permitindo identificar cada mensagem no fluxo de bytes fornecido pelo TCP.
+
+O jogo utiliza uma simulação determinística distribuída: cada peer mantém uma cópia completa da arena e calcula localmente os movimentos, rastros, colisões e o resultado da partida. Para que essas cópias permaneçam consistentes, todos devem iniciar com o mesmo estado e aplicar as mesmas ações em cada ciclo. Antes do início dos movimentos, os participantes conferem a configuração e o estado inicial por meio da troca de mensagens de preparação.
+
+\subsubsection{Regras e evolução da arena}
+
+A arena é uma grade retangular na qual cada jogador controla uma moto, inicialmente posicionada em uma célula e orientada em uma direção. A cada ciclo, as motos vivas avançam uma célula. O jogador pode solicitar uma mudança para cima, baixo, esquerda ou direita, mas não pode inverter diretamente o sentido do movimento. Na ausência de uma nova entrada do teclado, a moto mantém sua direção anterior.
+
+As células ocupadas pelas motos e por seus rastros permanecem bloqueadas. Uma moto é eliminada ao atingir uma parede, ultrapassar os limites da arena ou entrar em uma célula já ocupada. Se duas ou mais motos tentarem ocupar a mesma célula livre no mesmo ciclo, todas são eliminadas. Os rastros permanecem na arena mesmo após a eliminação de seus jogadores.
+
+As colisões são calculadas considerando os destinos de todas as motos sobre o mesmo estado anterior. Dessa forma, a ordem em que as mensagens chegam não determina o resultado da simulação. Vence o último jogador vivo; caso nenhum sobreviva ao ciclo, a partida termina empatada.
+
+\subsubsection{Comunicação e confirmação dos ciclos}
+
+Durante a execução normal, cada participante conectado fornece uma declaração por ciclo. Uma moto viva envia sua posição proposta por meio de uma mensagem \texttt{MOVE}; um participante cuja moto já foi eliminada envia \texttt{IDLE}, permanecendo como espectador e participando das confirmações. A saída voluntária é declarada por uma mensagem \texttt{LEAVE\_REQUEST}, em substituição à declaração normal daquele ciclo.
+
+Cada peer aguarda as declarações necessárias antes de calcular o estado candidato. As propostas de movimento representam ações solicitadas, e não posições definitivamente aceitas: cabe à simulação verificar seus efeitos, incluindo as colisões. Portanto, os jogadores não enviam continuamente a arena completa nem decidem isoladamente se suas motos sobreviveram.
+
+Após calcular o candidato, cada peer produz um hash que considera o snapshot da arena e os metadados de sincronização, incluindo a composição dos participantes, o coordenador e a época de comunicação. Esse valor é enviado aos demais em uma mensagem \texttt{STATE\_HASH}. O candidato somente é promovido a estado confirmado quando todos os hashes exigidos para o ciclo são recebidos e coincidem. O render utiliza esse estado confirmado para atualizar a tela.
+
+A confirmação é observada localmente: um peer pode receber todos os hashes antes de outro. Isso não significa que as simulações sejam diferentes, mas que os participantes podem estar em etapas distintas de confirmação do mesmo ciclo. Divergências entre hashes são tratadas como inconsistências, impedindo que a partida continue com estados incompatíveis.
+
+\subsubsection{Saída de participantes e recuperação}
+
+A morte da moto e a desconexão do processo possuem efeitos diferentes sobre a comunicação. Um jogador eliminado por colisão pode continuar conectado, enviando declarações de espectador e hashes. Na saída voluntária, os peers confirmam a eliminação e a remoção do participante das barreiras futuras antes de autorizar seu encerramento.
+
+Uma queda inesperada exige um acordo adicional, pois o participante indisponível não pode fornecer as mensagens pendentes. Nessa situação, o avanço é pausado e um peer coordenador organiza a recuperação entre os sobreviventes. A recuperação preserva os ciclos já confirmados, aplica uma decisão comum de remoção e inicia uma nova época de comunicação, evitando que mensagens antigas sejam utilizadas na retomada. A eliminação preserva os rastros do jogador removido.
+
+O coordenador não substitui a simulação distribuída: todos continuam calculando e verificando seus próprios estados. Sua indisponibilidade, ou a impossibilidade de concluir o acordo de recuperação, resulta em encerramento controlado.
+
+% O preambulo deve conter \usepackage{float}.
+
+\subsubsection{Formato Geral e Enquadramento das Mensagens}
+\label{sec:formato-p2p}
+
+A comunicação entre os peers utiliza mensagens JSON codificadas em UTF-8 e transmitidas sobre conexões TCP. Como o TCP fornece um fluxo de bytes, cada mensagem é encerrada por uma quebra de linha (\texttt{LF}, representada por \texttt{\textbackslash n}). O receptor acumula os bytes recebidos até encontrar esse delimitador e, então, interpreta o objeto JSON completo.
+
+Cada mensagem pode conter, no máximo, 4096 bytes, desconsiderando o delimitador final. Uma leitura do socket pode conter apenas parte de uma mensagem ou várias mensagens completas, tornando necessário o uso de um buffer de recepção.
+
+\paragraph{Envelope comum}
+
+Todas as mensagens seguem o envelope descrito na Tabela~\ref{tab:envelope_p2p}.
 
 \begin{table}[H]
-\centering
-\caption{Requisitos funcionais}
-\label{tab:requisitos-funcionais}
+    \centering
+    \caption{Campos do envelope das mensagens P2P}
+    \label{tab:envelope_p2p}
+    \begin{tabular}{|p{2.5cm}|p{11cm}|}
+        \hline
+        \textbf{Campo} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
 
-\begin{tabular}{p{2cm} p{10cm}}
-\toprule
-\textbf{ID} & \textbf{Descrição} \\
-\midrule
+        \texttt{version} &
+        Inteiro que identifica a versão do protocolo. Atualmente, seu valor é 3. \\ \hline
 
-RF01 & O sistema deve permitir que o usuário realize
-      \textbf{ação 1}. \\
+        \texttt{type} &
+        String que identifica o tipo da mensagem e determina o conteúdo de \texttt{data}. \\ \hline
 
-RF02 & O sistema deve permitir que o usuário realize
-      \textbf{ação 2}. \\
+        \texttt{match\_id} &
+        String que identifica a partida, com 1 a 64 caracteres e sem espaços nas extremidades. \\ \hline
 
-RF03 & O sistema deve apresentar
-      \textbf{informação 3}. \\
+        \texttt{sender\_id} &
+        Inteiro não negativo que identifica o remetente e deve corresponder ao jogador associado à conexão. \\ \hline
 
-\bottomrule
-\end{tabular}
+        \texttt{tick} &
+        Inteiro não negativo que indica o ciclo relacionado à mensagem. \\ \hline
 
+        \texttt{epoch} &
+        Inteiro não negativo que identifica a época de comunicação. Inicia em zero e é incrementado após uma recuperação bem-sucedida. \\ \hline
+
+        \texttt{data} &
+        Objeto JSON com os campos específicos da mensagem. Quando não há dados adicionais, utiliza-se \texttt{\{\}}. \\ \hline
+    \end{tabular}
+\end{table}
+
+Uma proposta de movimento pode ser representada pelo exemplo abaixo. A indentação tem finalidade expositiva: na transmissão, o objeto é serializado em uma única linha, seguida de LF.
+
+\par\medskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+{
+  "version": 3,
+  "type": "MOVE",
+  "match_id": "12",
+  "sender_id": 2,
+  "tick": 8,
+  "epoch": 0,
+  "data": {
+    "x": 10,
+    "y": 5
+  }
+}
+\end{verbatim}
+\end{minipage}
+\par\medskip
+
+
+\paragraph{Mensagens de identificação e preparação}
+
+Essas mensagens pertencem ao ciclo e à época zero. O \texttt{HELLO} identifica o canal na aplicação, enquanto o \texttt{READY} permite conferir a configuração antes dos movimentos.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens de identificação e preparação}
+    \label{tab:preparacao_p2p}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{HELLO} &
+        Identifica o jogador que iniciou a conexão P2P. O remetente é informado em \texttt{sender\_id}; o payload é vazio. Não substitui o estabelecimento da conexão TCP. \\ \hline
+
+        \texttt{READY} &
+        Contém \texttt{config\_hash}, o hash da configuração e do estado inicial. Permite verificar se os participantes prepararão a mesma simulação. \\ \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{Mensagens dos ciclos de simulação}
+
+Essas mensagens utilizam ciclos a partir de 1. Cada participante conectado fornece uma declaração por ciclo, e os estados candidatos são comparados antes da confirmação.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens dos ciclos de simulação}
+    \label{tab:simulacao_p2p}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{MOVE} &
+        Contém os inteiros \texttt{x} e \texttt{y}, indicando a posição proposta para a moto. A sessão valida o movimento e a simulação calcula seus efeitos. Coordenadas negativas são permitidas pelo formato, pois ultrapassar a arena pode eliminar a moto. \\ \hline
+
+        \texttt{IDLE} &
+        Possui payload vazio. Declara a participação de um jogador cuja moto foi eliminada, mas cujo processo continua conectado como espectador. \\ \hline
+
+        \texttt{STATE\_HASH} &
+        Contém \texttt{state\_hash}, utilizado para comparar o estado candidato calculado localmente com o dos demais participantes. \\ \hline
+    \end{tabular}
+\end{table}
+
+O hash de estado considera o snapshot, a época, os participantes ativos e o coordenador, verificando também os metadados de sincronização.
+
+\paragraph{Mensagens de saída voluntária}
+
+A saída é aplicada em um ciclo comum e confirmada antes do encerramento do processo solicitante.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens de saída voluntária}
+    \label{tab:saida_p2p}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{LEAVE\_REQUEST} &
+        Possui payload vazio e declara a saída do remetente no ciclo indicado. Substitui sua declaração normal daquele ciclo, sem cancelar um movimento já enviado para o mesmo ciclo. \\ \hline
+
+        \texttt{LEAVE\_ACK} &
+        Contém \texttt{player\_id}, identificando o jogador removido, e \texttt{state\_hash}, correspondente ao estado confirmado no ciclo de saída. O remetente do ACK confirma a saída de outro participante. \\ \hline
+    \end{tabular}
+\end{table}
+
+Ambas utilizam ciclos a partir de 1. Após a remoção confirmada, os demais deixam de esperar declarações e hashes do participante que saiu.
+
+\paragraph{Mensagens de conclusão da partida}
+
+Essas mensagens pertencem ao ciclo final e permitem concluir a distribuição das confirmações antes do fechamento normal das conexões.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens de conclusão da partida}
+    \label{tab:conclusao_p2p}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{FINISH\_ACK} &
+        Contém \texttt{state\_hash} e informa que o remetente já confirmou localmente o estado com o resultado final. \\ \hline
+
+        \texttt{FINISH\_COMMIT} &
+        Contém \texttt{state\_hash} e \texttt{ack\_ids}, a lista ordenada e sem repetições dos participantes que confirmaram o resultado. \\ \hline
+    \end{tabular}
 \end{table}
 
 
-\subsection{Requisitos não funcionais}
+\paragraph{Mensagem de interrupção}
 
-Entre os requisitos não funcionais definidos para o sistema
-estão:
+A mensagem apresentada na Tabela~\ref{tab:interrupcao_p2p} comunica o encerramento controlado da sessão diante de uma condição que impede sua continuidade.
 
-\begin{itemize}
-    \item facilidade de utilização;
-    \item desempenho adequado;
-    \item manutenibilidade do código;
-    \item segurança;
-    \item compatibilidade com as plataformas definidas
-    para o projeto.
-\end{itemize}
+\begin{table}[H]
+    \centering
+    \caption{Mensagem de interrupção controlada}
+    \label{tab:interrupcao_p2p}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
 
+        \texttt{ABORT} &
+        Comunica uma interrupção controlada. Contém \texttt{reason}, o código da causa, e \texttt{related\_tick}, o ciclo relacionado ao problema ou \texttt{null} quando não houver ciclo associado. \\ \hline
+    \end{tabular}
+\end{table}
 
-% ==================================================
-% 4. TECNOLOGIAS
-% ==================================================
-
-\section{Tecnologias e ferramentas}
-
-Para o desenvolvimento do projeto foram utilizadas
-diferentes tecnologias e ferramentas.
-
-\subsection{Linguagem de programação}
-
-O sistema foi desenvolvido utilizando
-\textbf{Nome da linguagem}, escolhida devido a
-\textbf{justificativa}.
-
-\subsection{Frameworks e bibliotecas}
-
-Foram utilizadas as seguintes bibliotecas e frameworks:
+Os motivos previstos são:
 
 \begin{itemize}
-    \item \textbf{Framework 1}: utilizado para
-    \textbf{finalidade};
-    
-    \item \textbf{Biblioteca 2}: utilizada para
-    \textbf{finalidade};
-    
-    \item \textbf{Biblioteca 3}: utilizada para
-    \textbf{finalidade}.
+    \item \texttt{CONFIG\_MISMATCH};
+    \item \texttt{INVALID\_MESSAGE};
+    \item \texttt{INVALID\_MOVE};
+    \item \texttt{CONFLICTING\_MOVE};
+    \item \texttt{STATE\_MISMATCH};
+    \item \texttt{PEER\_LEFT};
+    \item \texttt{PEER\_DISCONNECTED};
+    \item \texttt{TIMEOUT};
+    \item \texttt{COORDINATOR\_LOST};
+    \item \texttt{RECOVERY\_FAILED}.
 \end{itemize}
 
-\subsection{Ferramentas de desenvolvimento}
+As condições de emissão desses códigos são verificadas pela sessão.
 
-O desenvolvimento foi realizado utilizando ferramentas como
-\textbf{IDE/editor}, \textbf{Git} e
-\textbf{GitHub}.
+\paragraph{Mensagens de detecção de falhas}
+
+Todas as mensagens de detecção e recuperação incluem em \texttt{data} os campos \texttt{recovery\_id} e \texttt{failed\_id}. O primeiro identifica o acordo, com 1 a 80 caracteres; o segundo identifica o participante cuja indisponibilidade está sendo avaliada. Na sessão implementada, \texttt{recovery\_id} combina a próxima época e o ID do jogador suspeito.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens de relato e sondagem de falhas}
+    \label{tab:deteccao_p2p}
+    \begin{tabular}{|p{4.3cm}|p{9.2cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{FAILURE\_REPORT} &
+        Relata ao coordenador uma suspeita de indisponibilidade. Não possui campos adicionais aos dois campos comuns de recuperação. \\ \hline
+
+        \texttt{RECOVERY\_PROBE} &
+        Sonda a responsividade do jogador suspeito. Acrescenta \texttt{recipient\_id}, identificando o destinatário da sondagem. \\ \hline
+
+        \texttt{RECOVERY\_ALIVE} &
+        Responde à sondagem, indicando que o processo continua responsivo. Acrescenta \texttt{recipient\_id}, identificando o peer que deve receber a resposta. \\ \hline
+    \end{tabular}
+\end{table}
+
+\paragraph{Mensagens de preparação da recuperação}
+
+Essas mensagens estabelecem a composição do acordo, compartilham as evidências disponíveis e apresentam a proposta de retomada.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens de preparação e proposta de recuperação}
+    \label{tab:preparacao_recuperacao_p2p}
+    \begin{tabular}{|p{4.3cm}|p{9.2cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{RECOVERY\_BEGIN} &
+        Inicia o acordo. Acrescenta \texttt{members}, a composição anterior à remoção, incluindo o suspeito, e \texttt{coordinator\_id}. \\ \hline
+
+        \texttt{RECOVERY\_STATUS} &
+        Transporta um fragmento do relatório de estados confirmados e evidências. Acrescenta \texttt{part}, \texttt{total} e \texttt{content}. \\ \hline
+
+        \texttt{RECOVERY\_PROPOSE} &
+        Propõe a retomada. Acrescenta \texttt{base\_tick} e \texttt{base\_hash}, identificando sua base; \texttt{state\_hash}, o resultado proposto; \texttt{members}, a nova composição; \texttt{coordinator\_id}; e \texttt{new\_epoch}. \\ \hline
+    \end{tabular}
+\end{table}
+
+Em \texttt{RECOVERY\_STATUS}, \texttt{part} começa em zero e deve ser menor que \texttt{total}. São aceitos até 64 fragmentos, cada um com até 1000 caracteres em \texttt{content}, sempre respeitando o limite de bytes da mensagem completa.
+
+O campo \texttt{members} é uma lista ordenada de identificadores inteiros não negativos e sem repetições. Em \texttt{RECOVERY\_PROPOSE}, contém somente os participantes que permanecerão na nova época. Os campos de hash seguem a representação hexadecimal de 64 caracteres.
+
+\paragraph{Mensagens de aplicação e retomada}
+
+Essas mensagens confirmam a proposta, sua aplicação pelos sobreviventes e a liberação do avanço da partida.
+
+\begin{table}[H]
+    \centering
+    \caption{Mensagens de confirmação, aplicação e retomada}
+    \label{tab:retomada_p2p}
+    \begin{tabular}{|p{4.3cm}|p{9.2cm}|}
+        \hline
+        \textbf{Mensagem} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        \texttt{RECOVERY\_ACK} &
+        Confirma que o participante verificou e concordou com a proposta. Acrescenta \texttt{state\_hash}. \\ \hline
+
+        \texttt{RECOVERY\_COMMIT} &
+        Comunica a decisão do coordenador de aplicar a proposta aprovada. Acrescenta \texttt{state\_hash}. \\ \hline
+
+        \texttt{RECOVERY\_APPLIED} &
+        Informa ao coordenador que a decisão foi aplicada localmente. Acrescenta \texttt{state\_hash}. \\ \hline
+
+        \texttt{RECOVERY\_RESUME} &
+        Autoriza a retomada após as confirmações de aplicação dos sobreviventes. Acrescenta \texttt{state\_hash}. \\ \hline
+    \end{tabular}
+\end{table}
+
+Essas mensagens referenciam o mesmo hash proposto para a recuperação. O envelope mantém a época anterior durante o acordo, enquanto \texttt{new\_epoch} informa a época da retomada. O \texttt{tick} do envelope indica o ciclo confirmado local do emissor; \texttt{base\_tick} identifica especificamente a base proposta.
 
 
-% ==================================================
-% 5. METODOLOGIA
-% ==================================================
+\subsubsection{Tratamento de Exceções e Mensagens Anômalas}
+\label{sec:excecoes-p2p}
 
-\section{Metodologia de desenvolvimento}
+O protocolo realiza verificações estruturais e semânticas antes de aplicar as mensagens recebidas. A validação estrutural verifica se o conteúdo obedece ao formato definido, enquanto a validação semântica considera a identidade do remetente, a partida, o ciclo, a época e a fase atual da sessão. O objetivo é impedir que dados inválidos ou decisões incompatíveis alterem o estado compartilhado.
 
-O desenvolvimento do sistema foi dividido em etapas,
-permitindo organizar a implementação das funcionalidades.
+\paragraph{Mensagens malformadas}
 
-Inicialmente foi realizada a análise do problema e a
-definição dos requisitos. Em seguida, foi projetada a
-estrutura do sistema e posteriormente realizada a
-implementação.
+São consideradas malformadas as mensagens que apresentam JSON inválido, codificação UTF-8 incorreta, chaves JSON repetidas, versão incompatível ou campos ausentes, adicionais ou com tipos diferentes dos previstos. Também são rejeitados tipos de mensagem desconhecidos e quadros que ultrapassam o limite de 4096 bytes.
 
-As principais etapas foram:
+Uma falha de decodificação ou validação detectada na camada de comunicação provoca o fechamento do canal correspondente e a notificação da sessão. Mensagens estruturalmente válidas, mas semanticamente inválidas, são tratadas pela lógica da sessão, podendo resultar em uma interrupção controlada.
 
-\begin{enumerate}
-    \item levantamento dos requisitos;
-    \item definição da arquitetura;
-    \item implementação;
-    \item testes;
-    \item correção de erros;
-    \item integração das funcionalidades;
-    \item validação final.
-\end{enumerate}
+\paragraph{Mensagens atrasadas, repetidas ou antecipadas}
+
+Mensagens normais de ciclos já confirmados são descartadas, sem modificar a arena. Mensagens de épocas anteriores também não são utilizadas nas novas barreiras de sincronização. Dessa forma, dados atrasados não podem sobrescrever decisões já aplicadas.
+
+Uma declaração repetida com o mesmo conteúdo não gera uma nova ação. Entretanto, duas declarações diferentes do mesmo jogador para o mesmo ciclo são consideradas contraditórias. Um participante não pode, por exemplo, enviar um \texttt{MOVE} e depois substituí-lo por outro movimento ou por uma saída naquele ciclo.
+
+Mensagens antecipadas são aceitas somente dentro das janelas previstas pelo protocolo. Durante uma recuperação, mensagens da nova época podem ser armazenadas temporariamente em uma fila limitada, aguardando a autorização de retomada. Conteúdos fora dessas condições são rejeitados.
+
+\paragraph{Movimentos inválidos e colisões}
+
+A sessão verifica se uma proposta corresponde a um deslocamento de uma célula em uma direção permitida, sem inversão direta do sentido da moto. Também impede que uma moto já eliminada proponha novos movimentos e que uma moto viva utilize \texttt{IDLE} para deixar de se movimentar.
 
 
-% ==================================================
-% 6. ARQUITETURA
-% ==================================================
+\paragraph{Divergência de configuração ou de estado}
 
-\section{Arquitetura do sistema}
+Na preparação, os participantes comparam os valores de \texttt{config\_hash}. Uma diferença indica configurações ou estados iniciais incompatíveis e impede o início normal da partida.
 
-A arquitetura do sistema foi definida com o objetivo de
-organizar suas responsabilidades e facilitar a manutenção
-do código.
+Durante a simulação, os hashes recebidos devem coincidir com o hash calculado localmente. Se houver divergência, o candidato não é promovido a estado confirmado e a sessão é interrompida de forma controlada. A implementação não escolhe um estado por maioria nem aceita automaticamente a arena de outro participante.
 
-\subsection{Visão geral}
+Hashes diferentes enviados pelo mesmo remetente para o mesmo ciclo também são considerados contraditórios. Esses casos são associados a erros como \texttt{CONFIG\_MISMATCH}, \texttt{STATE\_MISMATCH} ou \texttt{INVALID\_MESSAGE}, conforme a verificação que identificou o problema.
 
-O sistema é composto pelos seguintes componentes:
+\paragraph{Mensagens ausentes e desconexões}
 
-\begin{itemize}
-    \item \textbf{Componente 1}: responsável por
-    \textbf{função};
-    
-    \item \textbf{Componente 2}: responsável por
-    \textbf{função};
-    
-    \item \textbf{Componente 3}: responsável por
-    \textbf{função}.
-\end{itemize}
+As etapas de preparação, troca de declarações, comparação de hashes e recuperação possuem prazos de espera. Assim, a ausência de mensagens não mantém os participantes bloqueados indefinidamente.
+
+Antes do início da sessão, a impossibilidade de concluir a preparação provoca seu encerramento. Durante uma partida, o fechamento de um canal ou a ausência de progresso pode iniciar a investigação de uma falha. A ausência de um hash não prova isoladamente a queda de seu remetente, pois ele também pode estar aguardando uma declaração de outro jogador.
+
+Por isso, quando necessário, são utilizadas sondagens de responsividade. Uma resposta do participante suspeito impede que aquele acordo o trate como indisponível por unanimidade. Se não for possível identificar uma falha única ou reunir as confirmações exigidas, a sessão encerra de forma controlada.
+
+\paragraph{Validação da recuperação}
+
+As mensagens de recuperação são verificadas quanto ao identificador do acordo, à época, ao participante suspeito, à composição esperada e à autoridade de quem emite cada decisão. Somente o coordenador pode iniciar e conduzir as decisões que lhe são atribuídas.
+
+Os relatórios fragmentados são reconstruídos por remetente e acordo. São rejeitados fragmentos contraditórios, quantidades incompatíveis e conteúdos fora dos limites previstos. A proposta de retomada deve corresponder às evidências compartilhadas e produzir o mesmo hash nos sobreviventes.
+
+\paragraph{Encerramento e notificação dos participantes}
+
+Quando a sessão identifica uma condição irrecuperável, utiliza \texttt{ABORT} para comunicar a interrupção aos participantes alcançáveis. O campo \texttt{reason} identifica a causa, enquanto \texttt{related\_tick} indica o ciclo associado, quando aplicável. Os estados candidatos deixam de avançar e os recursos de comunicação são encerrados.
+
+A saída voluntária segue um fluxo diferente: utiliza \texttt{LEAVE\_REQUEST} e \texttt{LEAVE\_ACK} para confirmar a remoção antes do fechamento do processo. A conclusão normal da partida utiliza \texttt{FINISH\_ACK} e \texttt{FINISH\_COMMIT}, distinguindo o término esperado de uma falha de comunicação.
+
+%\subsection{Máquinas de Estados Finitos (FSM)}
+%Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris tincidunt volutpat mi, at maximus magna volutpat ut. Proin tristique sem id dui malesuada, sit amet venenatis lectus dictum. Fusce elementum, dui sit amet condimentum imperdiet, nisi neque tincidunt metus, ac volutpat magna eros ac leo. Quisque placerat non elit nec sagittis. Sed auctor sollicitudin diam, faucibus suscipit est vehicula eget. Pellentesque congue tortor ex, quis ultrices enim eleifend id. Quisque ut diam a sapien faucibus scelerisque.
+
+\subsection{Máquinas de Estados Finitos}
+\label{sec:fsm}
+
+O funcionamento do sistema é representado por quatro máquinas de estados finitos: atendimento do servidor de lobby, participação do cliente no lobby, execução normal da partida e tratamento de saídas ou falhas.
 
 
-\subsection{Diagrama da arquitetura}
+\tikzset{
+    fsm/.style={
+        >=Stealth,
+        ->,
+        auto,
+        initial text={},
+        every state/.style={
+            draw,
+            fill=white,
+            minimum size=9mm,
+            inner sep=2pt,
+            font=\normalsize
+        }
+    }
+}
 
-A Figura~\ref{fig:arquitetura} apresenta uma visão geral
-da arquitetura do sistema.
+\subsubsection{Servidor de lobby}
 
+Esta máquina representa o atendimento de uma conexão pelo servidor. O processo principal permanece aceitando novas conexões, enquanto cada thread executa seu próprio atendimento.
+
+\begin{table}[H]
+    \centering
+    \caption{Estados do atendimento do servidor de lobby}
+    \label{tab:fsm_servidor_estados}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{ID} & \multicolumn{1}{c|}{\textbf{Estado}} \\ \hline
+        1 & Recebendo e validando o cadastro do cliente. \\ \hline
+        2 & Aguardando comandos de um cliente sem sala. \\ \hline
+        3 & Atendendo um cliente em uma sala de espera. \\ \hline
+        4 & Distribuindo ou concluindo a entrega das informações P2P. \\ \hline
+        5 & Atendimento encerrado, com fechamento dos recursos e limpeza do cadastro. \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Transições do atendimento do servidor de lobby}
+    \label{tab:fsm_servidor_transicoes}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{Transição} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        $1 \rightarrow 2$ &
+        Cadastro recebido e validado; o cliente é registrado. \\ \hline
+
+        $1 \rightarrow 5$ &
+        Cadastro inválido.
+        \newline
+        Encerramento da conexão ou erro de comunicação. \\ \hline
+
+        $2 \rightarrow 2$ &
+        Solicitação de listagem das salas.
+        \newline
+        Operação recusada sem alteração da participação do cliente. \\ \hline
+
+        $2 \rightarrow 3$ &
+        Criação de uma sala.
+        \newline
+        Entrada aceita em uma sala existente. \\ \hline
+
+        $2 \rightarrow 5$ &
+        Solicitação de saída.
+        \newline
+        Encerramento inesperado da conexão ou erro de comunicação. \\ \hline
+
+        $3 \rightarrow 3$ &
+        Entrada ou saída de outro participante sem início da partida.
+        \newline
+        Solicitação de listagem das salas.
+        \newline
+        Solicitação de início sem a quantidade mínima de participantes.
+        \newline
+        Operação recusada. \\ \hline
+
+        $3 \rightarrow 4$ &
+        A sala completa quatro participantes.
+        \newline
+        Um participante solicita início válido com três jogadores.
+        \newline
+        Outra thread inicia a partida e distribui as informações para esta conexão. \\ \hline
+
+        $3 \rightarrow 5$ &
+        Solicitação de saída durante a espera.
+        \newline
+        Encerramento inesperado da conexão ou erro de comunicação. \\ \hline
+
+        $4 \rightarrow 5$ &
+        A thread conclui a distribuição e encerra o atendimento.
+        \newline
+        O cliente fecha a conexão de lobby após receber as informações. \\ \hline
+    \end{tabular}
+\end{table}
+
+A limpeza remove o participante de uma sala ainda em espera e exclui a sala caso ela fique vazia. Depois do início, a composição distribuída deve permanecer congelada, sem renumerar os participantes.
+
+% FSM 1: servidor de lobby
 \begin{figure}[H]
     \centering
+    \begin{tikzpicture}[fsm]
+        \node[state, initial] (s1) at (0,0)    {1};
+        \node[state]          (s2) at (2.5,0)  {2};
+        \node[state]          (s3) at (5,0)    {3};
+        \node[state]          (s4) at (7.5,0)  {4};
+        \node[state]          (s5) at (4,-2.5) {5};
 
-    % Substitua pelo arquivo da imagem
-    \includegraphics[width=0.85\textwidth]{arquitetura.png}
+        \path
+            (s1) edge (s2)
+            (s1) edge[out=-90,in=180] (s5)
+            (s2) edge[loop above] (s2)
+            (s2) edge (s3)
+            (s2) edge (s5)
+            (s3) edge[loop above] (s3)
+            (s3) edge (s4)
+            (s3) edge (s5)
+            (s4) edge[out=-90,in=0] (s5);
+    \end{tikzpicture}
+    \caption{FSM do atendimento do servidor de lobby.}
+    \label{fig:fsm_servidor}
+\end{figure}
 
-    \caption{Arquitetura do sistema.}
-    \label{fig:arquitetura}
+\subsubsection{Cliente durante a participação no lobby}
+
+A segunda máquina representa o cliente desde a tentativa de conexão até o encerramento da participação no lobby ou a entrega do controle à etapa P2P.
+
+\begin{table}[H]
+    \centering
+    \caption{Estados do cliente durante o lobby}
+    \label{tab:fsm_cliente_lobby_estados}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{ID} & \multicolumn{1}{c|}{\textbf{Estado}} \\ \hline
+        1 & Conectando ao servidor e enviando o cadastro. \\ \hline
+        2 & Interagindo com o menu, sem participar de uma sala. \\ \hline
+        3 & Aguardando o início em uma sala. \\ \hline
+        4 & Informações recebidas e validadas; controle entregue à preparação P2P. \\ \hline
+        5 & Participação encerrada antes da partida. \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Transições do cliente durante o lobby}
+    \label{tab:fsm_cliente_lobby_transicoes}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{Transição} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        $1 \rightarrow 2$ &
+        Conexão estabelecida e cadastro enviado ao servidor. \\ \hline
+
+        $1 \rightarrow 5$ &
+        Falha de conexão.
+        \newline
+        Cancelamento da execução. \\ \hline
+
+        $2 \rightarrow 2$ &
+        Listagem das salas.
+        \newline
+        Solicitação recusada pelo servidor. \\ \hline
+
+        $2 \rightarrow 3$ &
+        Criação de sala confirmada.
+        \newline
+        Entrada em sala confirmada. \\ \hline
+
+        $2 \rightarrow 5$ &
+        Solicitação de saída.
+        \newline
+        Perda da conexão com o servidor. \\ \hline
+
+        $3 \rightarrow 3$ &
+        Espera por novos participantes.
+        \newline
+        Listagem das salas.
+        \newline
+        Pedido de início recusado por quantidade insuficiente de jogadores. \\ \hline
+
+        $3 \rightarrow 4$ &
+        Recebimento do status 203, encerramento das atividades do lobby e validação dos dados para a sessão P2P. \\ \hline
+
+        $3 \rightarrow 5$ &
+        Solicitação de saída.
+        \newline
+        Perda da conexão com o servidor.
+        \newline
+        Dados de início inválidos. \\ \hline
+    \end{tabular}
+\end{table}
+
+O estado 4 encerra somente o fluxo de lobby do cliente. A execução prossegue na máquina da partida, iniciando a formação da malha P2P e a preparação da sessão.
+
+% FSM 2: cliente no lobby
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[fsm]
+        \node[state, initial] (c1) at (0,0)    {1};
+        \node[state]          (c2) at (2.5,0)  {2};
+        \node[state]          (c3) at (5,0)    {3};
+        \node[state]          (c4) at (7.5,0)  {4};
+        \node[state]          (c5) at (4,-2.5) {5};
+
+        \path
+            (c1) edge (c2)
+            (c1) edge[out=-90,in=180] (c5)
+            (c2) edge[loop above] (c2)
+            (c2) edge (c3)
+            (c2) edge (c5)
+            (c3) edge[loop above] (c3)
+            (c3) edge (c4)
+            (c3) edge (c5);
+    \end{tikzpicture}
+    \caption{FSM do cliente durante a comunicação com o lobby.}
+    \label{fig:fsm_cliente_lobby}
+\end{figure}
+
+\subsubsection{Execução normal da partida}
+
+A terceira máquina descreve uma partida sem desconexões, saídas voluntárias ou inconsistências. As barreiras de declarações e hashes determinam o avanço dos ciclos.
+
+\begin{table}[H]
+    \centering
+    \caption{Estados da execução normal da partida}
+    \label{tab:fsm_partida_estados}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{ID} & \multicolumn{1}{c|}{\textbf{Estado}} \\ \hline
+        1 & Preparando a sessão: formação da malha P2P e conferência das mensagens READY. \\ \hline
+        2 & Aguardando as declarações dos participantes, correspondente a \texttt{WAITING\_MOVES}. \\ \hline
+        3 & Aguardando os hashes do candidato, correspondente a \texttt{WAITING\_HASHES}. \\ \hline
+        4 & Confirmando a distribuição do resultado final, correspondente a \texttt{WAITING\_FINISH}. \\ \hline
+        5 & Partida encerrada normalmente, correspondente a \texttt{FINISHED}. \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Transições da execução normal da partida}
+    \label{tab:fsm_partida_transicoes}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{Transição} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
+
+        $1 \rightarrow 2$ &
+        Malha formada e mensagens READY de todos os participantes conferidas, com configuração compatível. \\ \hline
+
+        $2 \rightarrow 3$ &
+        Todas as declarações necessárias foram recebidas e o intervalo do ciclo foi cumprido. O peer calcula o candidato e envia seu STATE\_HASH. \\ \hline
+
+        $3 \rightarrow 2$ &
+        Todos os hashes coincidem e o estado confirmado ainda possui mais de uma moto viva. Inicia-se o próximo ciclo. \\ \hline
+
+        $3 \rightarrow 4$ &
+        Todos os hashes coincidem e o estado confirmado determina um vencedor ou empate. \\ \hline
+
+        $4 \rightarrow 5$ &
+        Recebimento de todas as confirmações finais esperadas e emissão de FINISH\_COMMIT.
+        \newline
+        Recebimento de um FINISH\_COMMIT válido para o resultado confirmado. \\ \hline
+    \end{tabular}
+\end{table}
+
+Uma moto viva declara MOVE, enquanto um espectador declara IDLE. A eliminação por colisão altera o snapshot, mas não encerra a participação do processo na sincronização. O render utiliza somente o último estado confirmado.
+
+% FSM 3: partida normal
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[fsm]
+        \node[state, initial] (p1) at (0,0)      {1};
+        \node[state]          (p2) at (2.5,0)    {2};
+        \node[state]          (p3) at (5,0)      {3};
+        \node[state]          (p4) at (5,-2.5)   {4};
+        \node[state]          (p5) at (2.5,-2.5) {5};
+
+        \path
+            (p1) edge (p2)
+            (p2) edge (p3)
+            (p3) edge[bend left=40] (p2)
+            (p3) edge (p4)
+            (p4) edge (p5);
+    \end{tikzpicture}
+    \caption{FSM da execução normal de uma partida.}
+    \label{fig:fsm_partida}
 \end{figure}
 
 
-% ==================================================
-% 7. IMPLEMENTAÇÃO
-% ==================================================
 
-\section{Implementação}
+\subsubsection{Saída voluntária, desconexão e inconsistências}
 
-Nesta seção são apresentadas as principais decisões e
-componentes implementados durante o desenvolvimento.
-
-\subsection{Estrutura do projeto}
-
-A estrutura do projeto foi organizada de forma a separar
-as diferentes responsabilidades do sistema.
-
-Por exemplo:
-
-\begin{lstlisting}[language=Python, caption={Exemplo de estrutura do projeto}]
-projeto/
-|-- src/
-|   |-- main.py
-|   |-- models/
-|   |-- services/
-|   |-- controllers/
-|-- tests/
-|-- README.md
-\end{lstlisting}
-
-
-\subsection{Principais funcionalidades}
-
-Uma das principais funcionalidades implementadas foi
-\textbf{descrever funcionalidade}.
-
-O funcionamento dessa funcionalidade ocorre da seguinte
-forma:
-
-\begin{enumerate}
-    \item o usuário realiza \textbf{ação};
-    \item o sistema recebe os dados;
-    \item os dados são processados;
-    \item o sistema realiza \textbf{operação};
-    \item o resultado é apresentado ao usuário.
-\end{enumerate}
-
-
-\subsection{Exemplo de implementação}
-
-A Listagem~\ref{lst:exemplo} apresenta um trecho da
-implementação.
-
-\begin{lstlisting}[language=Python,
-caption={Exemplo de implementação},
-label={lst:exemplo}]
-
-def calcular(valor1, valor2):
-    resultado = valor1 + valor2
-    return resultado
-
-\end{lstlisting}
-
-
-% ==================================================
-% 8. TESTES
-% ==================================================
-
-\section{Testes}
-
-Foram realizados testes com o objetivo de verificar o
-funcionamento das funcionalidades implementadas.
-
-\subsection{Casos de teste}
+A quarta máquina complementa o fluxo normal, representando os caminhos de saída e recuperação. Seu ponto de vista é o processo cliente: no caminho voluntário, ele é o solicitante; no caminho de recuperação, ele é um dos sobreviventes.
 
 \begin{table}[H]
-\centering
-\caption{Casos de teste}
-\label{tab:testes}
-
-\begin{tabular}{p{1.5cm} p{4cm} p{4cm} p{2cm}}
-\toprule
-\textbf{ID} &
-\textbf{Entrada} &
-\textbf{Resultado esperado} &
-\textbf{Resultado} \\
-\midrule
-
-CT01 &
-Entrada válida &
-Sistema deve processar a entrada &
-Passou \\
-
-CT02 &
-Entrada inválida &
-Sistema deve apresentar erro &
-Passou \\
-
-CT03 &
-Campo vazio &
-Sistema deve rejeitar a operação &
-Passou \\
-
-\bottomrule
-\end{tabular}
-
+    \centering
+    \caption{Estados de saída, recuperação e interrupção}
+    \label{tab:fsm_falhas_estados}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{ID} & \multicolumn{1}{c|}{\textbf{Estado}} \\ \hline
+        1 & Participando normalmente da partida. \\ \hline
+        2 & Saída voluntária solicitada, aguardando sua aplicação em um ciclo. \\ \hline
+        3 & Aguardando confirmações da saída, correspondente a \texttt{WAITING\_LEAVE\_ACK}. \\ \hline
+        4 & Investigando uma indisponibilidade e executando o acordo de recuperação. \\ \hline
+        5 & Falha de protocolo ou inconsistência identificada. \\ \hline
+        6 & Interrompendo a sessão de forma controlada. \\ \hline
+        7 & Participação local encerrada. \\ \hline
+    \end{tabular}
 \end{table}
 
+\begin{table}[H]
+    \centering
+    \caption{Transições de saída, recuperação e interrupção}
+    \label{tab:fsm_falhas_transicoes}
+    \begin{tabular}{|c|p{11.7cm}|}
+        \hline
+        \textbf{Transição} &
+        \multicolumn{1}{c|}{\textbf{Descrição}} \\ \hline
 
-\subsection{Resultados}
+        $1 \rightarrow 2$ &
+        Solicitação local de saída voluntária. \\ \hline
 
-Os testes realizados demonstraram que as principais
-funcionalidades do sistema apresentaram o comportamento
-esperado.
+        $2 \rightarrow 3$ &
+        Confirmação do ciclo que aplica a remoção do jogador local. \\ \hline
 
-Caso necessário, podem ser apresentados nesta seção
-gráficos, tabelas ou capturas de tela do sistema.
+        $3 \rightarrow 7$ &
+        Recebimento de todos os LEAVE\_ACKs esperados; a sessão local chega a LEFT. \\ \hline
 
+        $1 \rightarrow 4$ &
+        Detecção de perda de conexão com um jogador comum.
+        \newline
+        Ausência de progresso em uma barreira, exigindo investigação.
+        \newline
+        Recebimento do início de recuperação conduzido pelo coordenador. \\ \hline
 
+        $4 \rightarrow 1$ &
+        Acordo concluído e retomada autorizada, sem resultado final da partida. \\ \hline
+
+        $4 \rightarrow 7$ &
+        Recuperação concluída com resultado final confirmado. \\ \hline
+
+        $1 \rightarrow 5$ &
+        Hash divergente.
+        \newline
+        Mensagem inválida.
+        \newline
+        Movimento inválido. \\ \hline
+
+        $2 \rightarrow 5$ &
+        Detecção de inconsistência durante o processamento da saída solicitada. \\ \hline
+
+        $3 \rightarrow 5$ &
+        Recebimento de confirmação de saída inválida ou contraditória. \\ \hline
+
+        $4 \rightarrow 5$ &
+        Evidências incompatíveis.
+        \newline
+        Proposta ou decisão de recuperação inválida.
+        \newline
+        Hash da recuperação divergente. \\ \hline
+
+        $5 \rightarrow 6$ &
+        Interrupção do avanço e emissão de ABORT aos participantes alcançáveis. \\ \hline
+
+        $1 \rightarrow 6$ &
+        Queda inesperada do coordenador.
+        \newline
+        Recebimento de ABORT válido de um participante ativo. \\ \hline
+
+        $4 \rightarrow 6$ &
+        Recuperação inviável.
+        \newline
+        Prazo de recuperação excedido.
+        \newline
+        Nova falha durante o acordo.
+        \newline
+        Recebimento de ABORT válido. \\ \hline
+
+        $3 \rightarrow 6$ &
+        Perda de uma conexão ainda necessária à confirmação.
+        \newline
+        Prazo de confirmação da saída excedido.
+        \newline
+        Recebimento de ABORT válido. \\ \hline
+
+        $6 \rightarrow 7$ &
+        Encerramento e liberação dos recursos de comunicação. \\ \hline
+    \end{tabular}
+\end{table}
+
+O estado 5 é conceitual: no código, uma verificação pode levar diretamente a ABORTED. Da mesma forma, o estado 4 agrupa a investigação, a coleta de evidências, a aprovação da proposta, a aplicação e a liberação da retomada.
+
+% FSM 4: saída, recuperação e interrupção
 \begin{figure}[H]
     \centering
+    \begin{tikzpicture}[fsm]
+        \node[state, initial] (f1) at (0,0)   {1};
+        \node[state]          (f2) at (-4,-2) {2};
+        \node[state]          (f3) at (-4,-4) {3};
+        \node[state]          (f4) at (4,-2)  {4};
+        \node[state]          (f5) at (0,-4)  {5};
+        \node[state]          (f6) at (0,-6)  {6};
+        \node[state]          (f7) at (-4,-6) {7};
 
-    % Substitua pelo arquivo da imagem
-    \includegraphics[width=0.8\textwidth]{screenshot.png}
+        % Saida voluntaria
+        \draw (f1) -- (f2);
+        \draw (f2) -- (f3);
+        \draw (f3) -- (f7);
 
-    \caption{Interface do sistema durante a execução.}
-    \label{fig:screenshot}
+        % Entrada e retorno da recuperacao
+        \draw (f1.south east) -- (f4.north west);
+        \draw (f4.north)
+            .. controls (4,0.2) and (1.8,0.8) ..
+            (f1.east);
+
+        % Falhas de protocolo ou inconsistencias
+        \draw (f1) -- (f5);
+        \draw (f2) -- (f5);
+        \draw (f3) -- (f5);
+        \draw (f4) -- (f5);
+        \draw (f5) -- (f6);
+
+        % Interrupcao durante a confirmacao de saida
+        \draw (f3) -- (f6);
+
+        % 4 -> 6: curva interna, chegando pela direita
+        \draw (f4.south)
+            .. controls (4,-4.7) and (2,-6) ..
+            (f6.east);
+
+        % 4 -> 7: caminho externo inferior
+        \draw (f4.east)
+            -- (5,-2)
+            -- (5,-8)
+            -- (-4,-8)
+            -- (f7.south);
+
+        % 1 -> 6: caminho externo superior e direito.
+        % Entrada distinta no estado 6, sem passar pelo estado 4.
+        \draw[
+            rounded corners=8pt,
+            preaction={draw=white,line width=3pt,arrows=-}
+        ]
+            (f1.north)
+            -- (0,1)
+            -- (6,1)
+            -- (6,-7)
+            -- (0,-7)
+            -- (f6.south);
+
+        % Encerramento apos interrupcao
+        \draw (f6) -- (f7);
+    \end{tikzpicture}
+    \caption{FSM de saída voluntária, recuperação e interrupção.}
+    \label{fig:fsm_falhas}
 \end{figure}
 
 
-% ==================================================
-% 9. DIFICULDADES E DECISÕES
-% ==================================================
-
-\section{Dificuldades e decisões de projeto}
-
-Durante o desenvolvimento foram encontradas algumas
-dificuldades relacionadas a \textbf{descrever problema}.
-
-Para solucionar esse problema, foi adotada a estratégia
-\textbf{descrever solução}.
-
-Também foram tomadas decisões relacionadas à arquitetura,
-organização do código e escolha das tecnologias.
-
-Essas decisões contribuíram para
-\textbf{descrever resultado}.
+Na saída voluntária, o encerramento do solicitante não implica o término da partida dos demais. Na recuperação, a eliminação do jogador indisponível preserva seus rastros e permite retomar a execução quando o acordo é concluído. A morte da moto, isoladamente, não significa desconexão do processo.
 
 
-% ==================================================
-% 10. RESULTADOS
-% ==================================================
+\section{Implementação e Tolerância a Falhas}
 
-\section{Resultados}
+\subsection{Do lobby}
+\subsubsection{Estrutura do código}
 
-Ao final do desenvolvimento, o sistema foi capaz de
-\textbf{descrever resultado principal}.
+A arquitetura do lobby foi pensanda para conferir comunicação entre processos, estabilidade, tolerância a falhas e comportamento concorrente. Em geral, é dividida em dois arquivos principais: \textit{lobbyWin.py}, cuja função é implementar o cliente, e \textit{serverV2.py}, com foco no servidor.
 
-As funcionalidades definidas inicialmente foram
-implementadas e testadas.
+O arquivo \textit{lobbyWin.py} é formado por uma função principal, a \textit{lobby()}, responsável por conectar o cliente ao servidor e iniciar as três \textit{threads} de execução, representadas pelas funções \textit{recebe-mensagem()}, \textit{trata-partida()} e \textit{trata-menu()}. Essa divisão de tarefas foi essencial para permitir a sua concorrência e indepedência, melhorando a responsividade do programa e a experiência do usuário. Ao final, retorna as informações do jogador (IP, porta e ID de partida e de jogador) para estabelecer a conexão P2P da fase seguinte.
 
-A Tabela~\ref{tab:resultados} apresenta um resumo dos
-resultados obtidos.
+A função \textit{recebe-mensagem()} atua como o centro de recepção de pacotes. Sabe-se que há dois tipos de mensagem que eventualmente se sobrepõem. Assim, para que, por exemplo, uma atualização de partida não seja interpretada como resposta do menu, essa função recebe a mensagem, converte o JSON para um dicionário e o adiciona a \textit{fila-menu} ou \textit{fila-partida}, a depender do tipo de mensagem identificado. Ademais, também atua na validação de pacotes no que diz respeito à forma e ao conteúdo, além de, periodicamente, fazer um \textit{timeout} para testar se o servidor não se desconectou. A seguir, apresenta-se seu código:
 
-\begin{table}[H]
-\centering
-\caption{Resumo dos resultados}
-\label{tab:resultados}
+\begin{verbatim}
+def recebe_mensagens(cliente):
+    cliente.settimeout(0.5)
+    buffer = b""
+    while not evento_encerrar.is_set():
+        try:
+            dados_brutos = cliente.recv(2048)
+            if not dados_brutos:
+                _encerrar(ConnectionError("Servidor encerrou a conexao"))
+                return
+            buffer += dados_brutos
+            while b"\n" in buffer:
+                linha, buffer = buffer.split(b"\n", 1)
+                if not linha.strip():
+                    continue
+                if len(linha) > 65536:
+                    raise ValueError("Mensagem muito grande")
+                dados = json.loads(linha.decode("utf-8"))
+                if dados["tipo_mensagem"] == "0":
+                    fila_menu.put(dados)
+                elif dados["tipo_mensagem"] == "1":
+                    fila_partida.put(dados)
+                    if dados["status"] == "203":
+                        return  # Nao confunde EOF posterior com falha de inicio.
+            if len(buffer) > 65536:
+                raise ValueError("Mensagem muito grande")
+        except socket.timeout:
+            continue
+        except (OSError, ValueError, KeyError, TypeError) as erro:
+            if not evento_encerrar.is_set():
+                _encerrar(erro)
+            return
+\end{verbatim}
 
-\begin{tabular}{p{7cm} p{4cm}}
-\toprule
-\textbf{Funcionalidade} & \textbf{Status} \\
-\midrule
+A função \textit{trata-partida()} é responsável por processar as mensagens adicionadas a \textit{fila-partida()}. Em geral, suporta duas operações: primeiro, as atualizações da sala, como a entrada de novos jogadores; segundo, o início de uma nova partida, que, do lado do cliente, força o retorno da função \textit{lobby()} e a finalização de todas as suas \textit{threads}. Disso, a triagem das duas ações é feita por meio do campo \textit{status} e do uso de condicionais. A seguir, há o código desse fragmento:
 
-Funcionalidade 1 & Implementada \\
-Funcionalidade 2 & Implementada \\
-Funcionalidade 3 & Implementada \\
-Funcionalidade 4 & Parcialmente implementada \\
+\begin{verbatim}
+def trata_partida():
+    
+    while not evento_encerrar.is_set():
+            msg = fila_partida.get()
 
-\bottomrule
-\end{tabular}
+            if msg is None:
+                break
 
-\end{table}
+            if msg["status"] == "202":
+                print(msg["msg"])
+
+            if msg["status"] == "203":
+                evento_encerrar.set()
+                fila_menu.put(None)
+                fila_partida.put(None)
+
+                global informacoes_partida
+                informacoes_partida = msg["info"]
+                break
+\end{verbatim}
+
+Por fim, há a função \textit{trata-menu()}. De forma geral, o menu é um grande bloco \textit{Switch-Case} em que cada comando numérico corresponde a uma operação no servidor. Assim, a função é responsável por receber o \textit{input} do usuário, validá-lo de acordo com condições básicas, enviá-lo para o servidor e receber sua resposta, de modo a mostrar o resultado ao usuário. Vale notar que, diferentemente de \textit{trata-partida}, o \textit{feedback} de \textit{trata-menu()} é previsível, visto que ocorrerá apenas quando o usuário, de fato, performa alguma ação. De qualquer modo, a seguir, apresenta-se um fragmento de seu código que ilustra seu funcionamento geral:
+
+\begin{verbatim}
+def trata_menu(cliente):
+
+    em_partida = False
+    id_partida = ""
+
+    while not evento_encerrar.is_set():
+
+        comando = _ler_entrada()
+        if comando is None:
+            break
+        if comando:
+
+            match comando:
+
+                case "1":
+                    if (em_partida == True):
+                        print("Você já está em uma partida.")
+                        continue
+                    
+                    cliente.sendall(comando.encode())
+
+                    msg = fila_menu.get()
+
+                    if msg is None:
+                        break
+
+                    if msg["status"] == "200":
+                        print("Partida criada com sucesso!")
+                        em_partida = True
+                        id_partida = msg["id_partida"]
+                        print(f"SALA {id_partida}", flush=True)
+
+                    if msg["status"] == "400":
+                        print("Houve um erro ao criar a partida... Por favor, tente novamente.")
+
+                    continue
+.
+.
+.
+\end{verbatim}
+
+Agora, o foco é o arquivo \textit{serverV2.py}. À priori, nota-se que não houve uma relação complexa entre \textit{threads} de pergunta e resposta, já que, como há apenas um tipo de mensagem, a abordagem sequencial é suficiente. No entanto, destaca-se que cada cliente deve ter a sua própria \textit{thread}, para que operações de jogadores diferentes sejam feitas de forma independente. Com isso, suas principais funções são: \textit{receber-cliente()}, \textit{cria-partida()}, \textit{listar-partida()}, \textit{entrar-partida()} e \textit{trocar-pares()}
+
+A função \textit{receber-cliente()} é a maior e mais importante. Sua responsabilidade principal é se conectar ao usuário e tratar todas as suas mensagens, em especial seus comandos. Por isso, sua estrutura é, de forma simples, um grande bloco \textit{Switch-Case} que, a depender das informações recebidas, performa uma ação específica e registra os dados na memória local. Um fator importante a destacar não apenas dessa função, mas de todas aquelas que realizam alterações na memória, é o uso do bloco \textit{with lock:}, que impede a escrita simultânea e libera recursos de maneira segura, uma boa forma de resguardar o programa de um possível \textit{deadlock}. A seguir, há um fragmento que ilustra a forma geral do método:
+
+\begin{verbatim}
+
+cliente = None
+    leitor = conn.makefile("rb")
+    try:
+        dados = json.loads(_ler_linha(leitor))
+        nome, porta = dados["nome"], dados["porta"]
+        if (type(nome) is not str or not nome.strip() or len(nome) > 40 or
+                any(ord(c) < 32 or ord(c) == 127 for c in nome) or
+                type(porta) is not int or not 1 <= porta <= 65535):
+            raise ValueError("Cadastro invalido")
+        cliente = Cliente(conn, nome, endereco[0], porta)
+        with lock:
+            if any((d["cliente"].ip_p2p, d["cliente"].porta_p2p) == (endereco[0], porta)
+                   for d in clientes.values()):
+                raise ValueError("Endpoint P2P ja cadastrado")
+            clientes[id_cliente] = {"informacoes": list(endereco), "cliente": cliente}
+        print(f"Cliente {id_cliente} conectado: {endereco}", flush=True)
+        numeropartida = ""
+
+        while True:
+            msg = leitor.read(1).decode("ascii")
+            if not msg:
+                return
+
+            match msg:
+                case "1":
+                    try:
+                        global partida_counter
+                        with lock:
+                            partida_counter += 1
+                            nova_id = str(partida_counter)
+                        criar_partida(cliente, nova_id)
+                        numeropartida = nova_id
+
+                        pacote = {
+                            "tipo_mensagem": "0",
+                            "status": "200",
+                            "id_partida": numeropartida
+                        }
+
+                        envia_pacote(pacote, conn)
+
+                    except ErroProtocolo as e:
+                        print(e)
+
+                        pacote = {
+                            "tipo_mensagem": "0",
+                            "status": e.codigo
+                        }
+
+                        envia_pacote(pacote, conn)
+.
+.
+.
+\end{verbatim}
+
+A função \textit{cria-partida}, por sua vez, é responsável por adicionar uma partida à lista de partidas, de modo a permitir a entrada de outros jogadores. Cada partida é representada pela classe \textit{Partida}, cuja estrutura é:
+
+\begin{verbatim}
+
+class Partida: 
+    id = "0"
+    jogadores = []
+
+    def __init__(self, id_partida, jogador):
+        self.id = id_partida
+        self.jogadores = [jogador]
+        self.jogador_counter = 1
+        self.iniciada = False
+        
+\end{verbatim}
+
+Note que o ID, uma \textit{string} iniciada em 0, será atualizado de acordo com um contador passado como parâmetro no construtor, e a lista de jogadores, iniciada apenas com o criador da partida. Há alguns atributos extras, \textit{jogador-counter} e \textit{iniciada}, que facilitam a contagem e checagem para a troca de estados.
+
+Por outro lado, percebe-se que uma representação mais sofisticada do jogador também é necessária. A seguir, há sua estrutura básica:
+
+\begin{verbatim}
+class Cliente :
+    conexao = ""
+    ip_p2p = ""
+    porta_p2p = ""
+    nome = ""
+
+    def __init__(self, conexao, nome, ip_p2p, porta_p2p):
+        self.conexao = conexao
+        self.nome = nome
+        self.ip_p2p = ip_p2p
+        self.porta_p2p = porta_p2p
+        self.partida_id = ""
+\end{verbatim}
+
+É claro que, nessa etapa, a preocupação está na comunicação, então atributos cujo foco é a jogabilidade serão deixados de lado. De qualquer modo, destacam-se \textit{conexao}, que armazena o \textit{socket} TCP instanciado, \textit{ip-p2p} e \textit{porta-p2p}, os endereços que serão utilizados para, posteriormente, iniciar a conexão P2P por um \textit{socket} independente, e \textit{nome}, um apelido arbitrário que serve apenas para uma melhor interação com jogador. 
+
+Com isso tudo, é possível representar partidas e jogadores de maneira satisfatória. Assim, ambos serão armazenados em memória por meio de dicionários, em que seu ID único, obtido justamente da contagem de elementos, serve como chave. Disso, a criação de uma nova partida é trivial: basta instanciar um objeto de \textit{partida} e adicionar ao dicionário:
+
+\begin{verbatim}
+
+def criar_partida(cliente, id_partida):
+    with lock:
+        if cliente.partida_id:
+            raise ErroProtocolo("400", "Voce ja esta em uma partida")
+        nova_partida = Partida(id_partida, cliente)
+        partidas[id_partida] = nova_partida
+        cliente.partida_id = id_partida
+        print(f"Partida criada por: {cliente.nome}", flush=True)
+        
+\end{verbatim}
+
+Por fim, vale ressaltar que a função imprime, tanto para o jogador quanto para o servidor, o resultado da criação da partida, além de outras informações relevantes para as operações restantes do menu.
+
+Em sequência, foca-se na função \textit{listar-partida()}, cuja responsabilidade é iterar o dicionário de partidas e reunir seus IDs e componentes atuais. Trata-se de uma funcionalidade importante, já que dá ao usuário o conhecimento necessário para entrar na sala desejada. De qualquer maneira, sua implementação é simples: basta realizar \textit{for} loops e, à medida que são obtidas informações úteis, formatá-las para respeitar o padrão de mensagem estipulado pelo protocolo. Seu código pode ser visto abaixo:
+
+\begin{verbatim}
+
+def listar_partida():
+    try:
+        with lock:
+            resumo = {}
+            for p_id, partida in partidas.items():
+                if partida.iniciada:
+                    continue
+                nomes = []
+
+                for j in partida.jogadores:
+                    nomes.append(j.nome)
+
+                resumo[p_id] = {
+                    "qtd_jogadores": len(partida.jogadores),
+                    "jogadores": nomes
+                }
+            return resumo
+    except:
+        raise ErroProtocolo("401","Erro ao listar partidas")
+    
+\end{verbatim}
+
+Posteriormente, ainda há \textit{entrar-partida()}. Sua função, como sugerido, é adicionar um jogador a uma partida pré-existente. Para isso, recebe, além do comando em si, o ID da partida desejada. No que faz jus a exceções, sua estrutura é mais robusta, já que é necessário avaliar, antes de qualquer operação, a existência da partida e o número de jogadores adicionados. Caso alguma verificação falhe, a própria função deve subir um erro de protocolo para camada superior:
+
+\begin{verbatim}
+def entrar_partida(cliente, id_partida):
+    with lock:
+        global partidas  
+        if cliente.partida_id:
+            raise ErroProtocolo("404", "Voce ja esta em uma partida")
+        if id_partida not in partidas:
+            raise ErroProtocolo("402",f"A partida {id_partida} não existe.")
+        
+        partida = partidas[id_partida]
+            
+        if partida.iniciada or len(partida.jogadores) >= 4:
+            raise ErroProtocolo("403", "A partida já está cheia.")
+                
+        partida.jogadores.append(cliente)
+        cliente.partida_id = id_partida
+        iniciou = len(partida.jogadores) == QUANTIDADE_CLIENTES_SALA
+        if iniciou:
+            partida.iniciada = True
+        print(f"{cliente.nome} entrou na partida {id_partida}.", flush=True)
+        return list(partida.jogadores), iniciou
+\end{verbatim}
+
+Por fim, existe \textit{trocar-pares()}, cuja função é realizar a troca de estados para a fase de partida e, efetivamente, compartilhar todas as informações necessárias para estabelecer a conexão P2P. Há dois casos em que ela pode ser executada: primeiro, caso a partida atinja o número máximo de quatro jogadores, condição que a inicia obrigatoriamente; segundo, se a partida estiver com três jogadores, qualquer um deles pode efetuar o comando \textit{4 - Iniciar Partida}, no menu principal, de modo a começá-la com um número reduzido de componentes, mas com o mesmo funcionamento básico:
+
+\begin{verbatim}
+def trocar_pares(jogadores, numeropartida):
+    composicao = {
+        str(index + 1): {"ip_jogador": j.ip_p2p, "porta_jogador": j.porta_p2p}
+        for index, j in enumerate(jogadores)
+    }
+    for index, jogador in enumerate(jogadores):
+            info = {"id_partida": numeropartida, "player_id": index + 1, "jogadores": composicao}
+            pacote = {"tipo_mensagem": "1", "status": "203", "info": info}
+            try:
+                envia_pacote(pacote, jogador.conexao)
+            except OSError:
+                _fechar(jogador.conexao)
+                print(f"Informacoes enviadas para partida {numeropartida}.", flush=True)
+\end{verbatim}
 
 
-% ==================================================
-% 11. CONCLUSÃO
-% ==================================================
+\subsubsection{Comunicação individual: \texttt{peer.py}}
+\label{sec:implementacao-peer}
 
-\section{Conclusão}
+O arquivo \texttt{peer.py} implementa a comunicação por uma conexão TCP individual. Sua classe \texttt{Peer} encapsula o socket associado a um participante remoto e oferece operações de envio, recebimento e fechamento
 
-O desenvolvimento do projeto permitiu aplicar conceitos
-relacionados à produção de software, desde a definição dos
-requisitos até a implementação e realização dos testes.
+\paragraph{Classe e informações mantidas}
 
-O sistema desenvolvido atende aos principais objetivos
-estabelecidos no início do projeto, apresentando as
-funcionalidades necessárias para
-\textbf{descrever finalidade}.
+Cada instância armazena o identificador do participante remoto em \texttt{player\_id}, o socket em \texttt{sock} e um indicador local de disponibilidade em \texttt{connected}. Esse indicador registra o encerramento conhecido da conexão.
+A classe também mantém um buffer de bytes para reconstruir mensagens e um lock para serializar os envios. O buffer é necessário porque uma chamada a \texttt{recv()} pode retornar uma mensagem incompleta ou reunir dados de várias mensagens. O lock impede que envios concorrentes misturem os bytes de mensagens diferentes.
 
-Além disso, o desenvolvimento possibilitou a aplicação
-prática de conhecimentos relacionados a
-\textbf{tecnologias/conceitos utilizados}.
+\paragraph{Envio de mensagens}
 
-Como trabalhos futuros, podem ser consideradas melhorias
-como \textbf{melhoria 1}, \textbf{melhoria 2} e
-\textbf{melhoria 3}.
+O método \texttt{send()} verifica se a conexão está disponível e utiliza \texttt{encode\_message()}, definida no protocolo, para validar e serializar a mensagem, incluindo o delimitador LF. O envio é realizado por \texttt{sendall()} dentro da região protegida pelo lock:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+data = encode_message(message)
+
+with self.send_lock:
+    try:
+        self.sock.sendall(data)
+    except OSError:
+        self.close()
+        raise
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+Em caso de erro no socket, a conexão é fechada e a exceção é propagada ao componente responsável por gerenciá-la. O sucesso de \texttt{sendall()} não representa confirmação de processamento pelo destinatário. 
+\paragraph{Recebimento e reconstrução das mensagens}
+
+O método \texttt{receive()} procura inicialmente um delimitador no buffer. Quando encontra uma mensagem completa, retira somente seus bytes e o delimitador, preservando qualquer conteúdo posterior para a próxima chamada:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+pos = self.buffer.find(DELIMITER)
+
+if pos != -1:
+    data = bytes(self.buffer[:pos])
+    del self.buffer[:pos + len(DELIMITER)]
+
+    if len(data) > MAX_MESSAGE_SIZE:
+        raise ValueError("Mensagem muito grande")
+
+    return decode_message(data)
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+Se ainda não houver um quadro completo, o método recebe mais bytes pelo socket e os acrescenta ao buffer. Também verifica o limite de tamanho antes de continuar acumulando dados. A decodificação UTF-8 e a interpretação do JSON ocorrem somente após a separação da mensagem completa, por meio de \texttt{decode\_message()}.
+
+Cada chamada retorna uma única mensagem. O gerenciamento da conexão mantém um leitor por canal, evitando acessos concorrentes ao buffer de recepção.
+
+\paragraph{Encerramento e participação no tratamento de falhas}
+
+O método \texttt{close()} marca a conexão como encerrada, tenta interromper as operações de leitura e escrita com \texttt{shutdown()} e fecha o socket. Se a conexão já estiver marcada como fechada, o método retorna sem repetir o procedimento.
+
+Quando \texttt{recv()} retorna uma sequência vazia, indicando fim do fluxo remoto, \texttt{receive()} fecha a conexão e retorna \texttt{None}. Erros de socket são propagados após o fechamento; erros de formato ou tamanho também são propagados para tratamento pelo gerenciador.
+
+Dessa forma, \texttt{Peer} fornece os sinais básicos de perda de comunicação.
+
+\subsubsection{Gerenciamento das conexões: \texttt{p2p\_manager.py}}
+\label{sec:implementacao-manager}
+
+O arquivo \texttt{p2p\_manager.py} implementa o gerenciamento das conexões TCP entre os participantes. Sua classe \texttt{P2PManager} organiza a formação da malha completa, mantém os canais registrados e coordena as threads de comunicação, as filas de mensagens e o encerramento dos recursos.
+
+\paragraph{Classes e informações mantidas}
+
+Cada instância de \texttt{P2PManager} armazena o identificador local, o identificador da partida e o dicionário \texttt{players}, que associa os participantes aos seus endereços e portas. As conexões registradas ficam em \texttt{\_channels}, enquanto os sockets em estabelecimento ou identificação ficam em \texttt{\_pending}, associados a prazos de conclusão.
+
+A estrutura auxiliar \texttt{\_Channel} reúne um objeto \texttt{Peer}, uma fila de saída, o prazo do envio em andamento e um indicador de fechamento. A fila \texttt{messages} disponibiliza as mensagens recebidas, acompanhadas do identificador do remetente.
+
+O acesso às estruturas compartilhadas utiliza um lock e uma variável de condição. As threads criadas são registradas em \texttt{\_threads}, permitindo aguardá-las durante o encerramento.
+
+\paragraph{Inicialização e formação da malha}
+
+O método \texttt{start()} inicializa a escuta e as threads de aceitação e monitoramento. Na integração com o lobby, recebe o listener previamente reservado, verifica sua compatibilidade com o endereço anunciado e assume seu gerenciamento.
+
+A formação da malha utiliza uma regra determinística: o participante de menor identificador inicia a conexão com o de maior identificador. Essa seleção ocorre em \texttt{connect\_to\_peers()}:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+for remote_id in sorted(self.players):
+    if remote_id > self.player_id:
+        self._spawn_locked(
+            f"connect-{remote_id}",
+            self._connect_one,
+            (remote_id,)
+        )
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+Cada conector realiza tentativas dentro de uma janela limitada e envia \texttt{HELLO} após estabelecer o TCP. No recebimento de uma conexão, \texttt{\_accept\_hello()} verifica a partida, a identidade declarada e a regra de ordenação dos IDs.
+
+O método \texttt{\_register\_peer()} rejeita registros duplicados ou fora do prazo e, para cada canal aceito, inicia uma thread de leitura e outra de escrita. Isso permite receber mensagens enquanto existem envios pendentes na mesma conexão.
+
+\paragraph{Recebimento e disponibilização das mensagens}
+
+A thread de leitura executa \texttt{\_receive\_loop()}. Cada mensagem recebida tem sua origem conferida antes de ser colocada na fila pública:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+message = peer.receive()
+if message is None:
+    break
+
+protocol.validate_origin(
+    message, self.match_id, self.players,
+    channel_sender_id=peer.player_id
+)
+self.messages.put((peer.player_id, message))
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+A tupla preserva a associação entre o conteúdo recebido e a conexão que o entregou. Se o fluxo terminar ou ocorrer uma exceção de comunicação ou validação, o canal passa pelo procedimento de remoção.
+
+\paragraph{Filas de envio e controle de prazos}
+
+O método \texttt{send\_to()} valida o destinatário e a mensagem, produz uma cópia independente do conteúdo e a insere na fila do canal. Seu retorno indica se o enfileiramento foi aceito. O envio efetivo é realizado pela thread \texttt{\_send\_loop()}, que retira as mensagens em ordem FIFO.
+
+Cada fila possui capacidade limitada, e cada mensagem recebe um prazo que abrange sua espera e seu envio. A thread de monitoramento verifica periodicamente esses prazos e os dos sockets ainda em identificação. Quando uma fila fica cheia ou um prazo de envio expira, o canal é removido.
+
+O método \texttt{broadcast()} aplica \texttt{send\_to()} aos demais participantes cadastrados e retorna o resultado de enfileiramento para cada destino. Já \texttt{flush()} aguarda a conclusão dos envios locais pendentes dentro de um prazo, sem representar confirmação de recebimento remoto.
+
+\paragraph{Remoção de canais e encerramento}
+
+O método \texttt{\_drop()} centraliza a remoção de uma conexão. Ele retira o canal do registro, marca seu fechamento, descarta os envios pendentes e registra a causa em \texttt{\_errors}. Enquanto o manager está ativo, também insere em \texttt{messages} um evento local \texttt{DISCONNECTED}, associado ao participante afetado. A verificação do registro evita emitir repetidamente a remoção do mesmo canal.
+
+O encerramento completo é realizado por \texttt{close()}: primeiro sinaliza a parada e desperta as threads em espera; depois fecha o listener, os sockets pendentes e os canais registrados; por fim, aguarda as threads com \texttt{join()}. Caso alguma permaneça ativa além do prazo, uma exceção informa a falha de encerramento. Quando se deseja concluir os envios pendentes, \texttt{flush()} deve ser chamado antes de \texttt{close()}.
+
+\subsubsection{Sincronização da partida: \texttt{GameSession.py}}
+\label{sec:implementacao-gamesession}
+
+O arquivo \texttt{GameSession.py} implementa a organização dos ciclos da partida. Sua classe \texttt{GameSession} mantém o estado confirmado da arena, registra as declarações dos participantes e controla as etapas de preparação, cálculo e confirmação dos estados.
+
+\paragraph{Classe e informações mantidas}
+
+Cada instância armazena o identificador local, a partida, a configuração e a composição dos jogadores. O conjunto \texttt{participants} representa os participantes originais, enquanto \texttt{active\_participants} identifica aqueles que ainda participam das barreiras de comunicação.
+
+O estado da arena é mantido em duas estruturas: \texttt{\_confirmed}, contendo o último snapshot confirmado, e \texttt{\_candidate}, contendo o resultado calculado para o ciclo em andamento. O atributo \texttt{phase} identifica a etapa atual da sessão, \texttt{confirmed\_tick} registra o ciclo confirmado e \texttt{epoch} distingue a execução vigente após recuperações.
+
+As declarações, propostas e hashes são organizados por ciclo em \texttt{\_declarations}, \texttt{\_moves} e \texttt{\_hashes}. As mensagens produzidas ficam em uma fila de saída, disponibilizada por \texttt{drain\_outgoing()}.
+
+\paragraph{Preparação e registro das ações}
+
+O método \texttt{start()} inicia a preparação e produz a mensagem READY com o hash da configuração e do estado inicial. O primeiro ciclo é liberado quando as confirmações de todos os participantes são recebidas e coincidem.
+
+Durante a partida, \texttt{submit\_direction()} converte a direção solicitada em uma posição proposta, registrada por \texttt{submit\_move()}. O método \texttt{needs\_local\_move()} indica se a moto local ainda deve declarar seu movimento naquele ciclo.
+
+Cada participante fornece uma única declaração: MOVE para uma moto viva, IDLE para um espectador ou LEAVE\_REQUEST para uma saída voluntária. Declarações idênticas podem ser repetidas, mas uma declaração diferente não substitui a anterior no mesmo ciclo.
+
+\paragraph{Cálculo do estado candidato}
+
+O avanço das barreiras é concentrado em \texttt{\_progress()}. Na fase WAITING\_MOVES, o método aguarda as declarações de todos os membros ativos e o cumprimento do intervalo definido para o ciclo. Em seguida, valida as propostas e calcula o candidato:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+ordered = {
+    i: deepcopy(moves[i]) for i in sorted(moves)
+}
+candidate = self._simulate_departures(ordered, leaving)
+candidate = self._normalize_snapshot(candidate, tick)
+next_members = self.active_participants - leaving
+digest = self._state_digest(candidate, next_members)
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+A ordenação das propostas padroniza sua organização. O cálculo considera as saídas declaradas e produz um novo snapshot, preservando o confirmado até a conclusão da comparação dos hashes. O candidato é armazenado, seu hash é enviado e a fase passa para WAITING\_HASHES.
+
+\paragraph{Confirmação e disponibilização do estado}
+
+Na comparação dos hashes, qualquer valor diferente do calculado localmente impede a confirmação. Mesmo quando os valores recebidos coincidem, a sessão aguarda todos os membros exigidos para aquele ciclo:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+if not set(hashes) <= members or any(
+    d != own for d in hashes.values()
+):
+    self._abort(
+        "STATE_MISMATCH", "Estados ou membros diferem", tick
+    )
+    return
+
+if set(hashes) != members:
+    return
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+Após essa barreira, o candidato passa a ser o estado confirmado, o ciclo é atualizado e suas evidências são registradas em um checkpoint. A sessão também atualiza os participantes ativos e remove os registros temporários daquele ciclo.
+
+O método \texttt{snapshot()} devolve uma cópia do confirmado, permitindo sua consulta sem expor os dados internos à modificação. Se ainda houver disputa, um novo ciclo é iniciado. Caso exista vencedor ou empate, a sessão entra em WAITING\_FINISH para concluir as confirmações do resultado antes de chegar a FINISHED.
+
+\paragraph{Saída voluntária e acompanhamento da sessão}
+
+O método \texttt{leave()} registra a intenção de saída. Se ainda não houve declaração local no ciclo, publica LEAVE\_REQUEST imediatamente; caso contrário, preserva a ação já enviada e solicita a saída no ciclo seguinte.
+
+Quando o ciclo de remoção é confirmado, o jogador local entra em WAITING\_LEAVE\_ACK. O método \texttt{\_check\_leave\_acks()} verifica as confirmações esperadas e conduz a sessão ao estado LEFT. A remoção conserva os rastros e retira o participante das barreiras futuras.
+
+O método \texttt{update()} verifica o progresso e os prazos da fase atual. Durante os ciclos normais, mensagens ausentes podem iniciar a investigação de indisponibilidade. Inconsistências irrecuperáveis são tratadas por \texttt{\_abort()}, que registra a causa, descarta os dados pendentes do ciclo e produz a notificação ABORT. Os estados terminais da sessão são FINISHED, LEFT e ABORTED.
+
+\subsubsection{Simulação determinística: \texttt{simulation.py}}
+\label{sec:implementacao-simulation}
+
+O arquivo \texttt{simulation.py} implementa as regras de evolução da arena por meio de funções que recebem e produzem snapshots. Para um mesmo estado anterior e o mesmo conjunto de movimentos, o resultado calculado é o mesmo, permitindo reproduzir a simulação nos diferentes participantes.
+
+\paragraph{Representação e validação do estado}
+
+O snapshot contém quatro campos: \texttt{tick}, o ciclo; \texttt{players}, a lista de jogadores; \texttt{grid}, a grade; e \texttt{result}, o resultado da partida. Cada jogador possui identificador, posição, direção e indicador de sobrevivência.
+
+As células da grade são representadas por \texttt{EMPTY}, \texttt{WALL} ou pelo identificador inteiro do proprietário do rastro. A posição atual de uma moto viva também está marcada como ocupada.
+
+A função \texttt{validar\_estado()} verifica a estrutura e a consistência desses dados, incluindo IDs únicos, grade retangular, posições das motos vivas e resultado compatível com os sobreviventes. A função \texttt{normalizar\_estado()} valida e produz uma cópia independente, ordenando os jogadores por identificador.
+
+\paragraph{Estado inicial e propostas de movimento}
+
+A função \texttt{criar\_estado\_inicial()} recebe os participantes e as dimensões da arena. Ela constrói as paredes nas bordas e distribui as motos em posições e direções predefinidas. A ordenação dos IDs garante que a mesma composição produza a mesma disposição inicial.
+
+A função \texttt{calcular\_destino()} transforma uma direção em uma posição proposta, mantendo a direção atual quando nenhuma alteração é informada. A proposta é conferida por \texttt{validar\_movimento()}, que exige uma moto viva, deslocamento de uma célula e ausência de inversão direta de sentido:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+delta = (
+    movimento["x"] - jogador["x"],
+    movimento["y"] - jogador["y"]
+)
+dx, dy = DIRECTIONS[old_direction]
+
+if delta not in _DIRECTION_NAMES or delta == (-dx, -dy):
+    raise ValueError(
+        "Movimento deve dar um passo e nao inverter a direcao"
+    )
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+Essa validação verifica a ação proposta. O fato de seu destino estar ocupado ou fora da arena é avaliado como colisão durante a simulação.
+
+\paragraph{Cálculo simultâneo das colisões}
+
+A função central \texttt{simulate\_tick()} recebe o estado anterior e exatamente uma proposta por moto viva. Inicialmente, cria uma cópia normalizada, valida os movimentos e reúne todos os destinos.
+
+As colisões são avaliadas sobre a mesma grade anterior, antes de aplicar qualquer deslocamento. Uma contagem dos destinos permite identificar motos que tentam ocupar a mesma célula no mesmo ciclo:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+counts = Counter(targets.values())
+deaths, new_cells = set(), {}
+
+for player_id, (x, y) in targets.items():
+    inside = 0 <= x < width and 0 <= y < height
+
+    if (
+        not inside
+        or grid[y][x] != EMPTY
+        or counts[(x, y)] > 1
+    ):
+        deaths.add(player_id)
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+A condição identifica destinos externos, células ocupadas e colisões simultâneas em uma mesma posição. Como todas as decisões utilizam a grade anterior e o conjunto completo de destinos, o resultado não depende da ordem de atualização das motos.
+
+\paragraph{Aplicação do ciclo e resultado}
+
+Somente após determinar as eliminações, a função atualiza as posições, direções e indicadores de sobrevivência. As células livres alcançadas passam a conter rastros, preservando todas as ocupações anteriores.
+
+Quando várias motos colidem em uma mesma célula livre, essa célula também permanece ocupada. O menor ID envolvido é utilizado como representação determinística de seu proprietário, sem alterar a eliminação dos envolvidos.
+
+Por fim, o ciclo é incrementado e os sobreviventes são contados. Com mais de uma moto viva, \texttt{result} permanece nulo; com uma, registra seu identificador em \texttt{winner\_id}; sem sobreviventes, registra \texttt{winner\_id} nulo, indicando empate.
+
+O snapshot resultante é validado antes do retorno. Como as alterações são aplicadas à cópia, o estado recebido como entrada permanece preservado.
+
+\subsubsection{Execução integrada da partida: \texttt{game\_runner.py}}
+\label{sec:implementacao-runner}
+
+O arquivo \texttt{game\_runner.py} implementa o laço de execução da partida. A partir do resultado validado do lobby, inicializa os componentes do jogo e organiza a leitura do teclado, o processamento das mensagens, o avanço da sessão e a atualização da tela.
+
+\paragraph{Inicialização e transferência do listener}
+
+A função \texttt{executar\_partida()} recebe os dados da partida e as opções de execução. Ela valida os parâmetros locais, organiza as opções e chama \texttt{\_executar\_partida()}, garantindo o fechamento do listener caso ocorra uma falha anterior à sua transferência.
+
+A inicialização cria o snapshot inicial, a GameSession e o P2PManager. O socket reservado no lobby é entregue ao manager:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+manager.start(listener=result.listener)
+result.listener = None
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+A atribuição de \texttt{None} registra que o resultado do lobby deixou de ser responsável pelo recurso. A porta permanece reservada, utilizando o mesmo socket. A preparação da sessão é iniciada quando o conjunto de conexões registradas corresponde aos demais participantes da partida.
+
+\paragraph{Captura do teclado}
+
+A classe \texttt{Teclado} realiza consultas não bloqueantes à entrada do terminal. No Windows, utiliza \texttt{msvcrt}; no Linux e em sistemas semelhantes, utiliza \texttt{select}, \texttt{termios} e \texttt{tty}. O modo do terminal é restaurado ao sair do contexto de execução.
+
+As teclas WASD são convertidas em direções e armazenadas como intenção pendente. Essa intenção é utilizada quando \texttt{needs\_local\_move()} indica que uma proposta local pode ser enviada. Antes do envio, a direção é novamente validada em relação ao estado confirmado, pois a arena pode ter avançado desde a captura da tecla.
+
+Q ou Esc solicita a saída voluntária. No modo automático, utilizado nos testes, a consulta ao teclado retorna uma lista vazia e a moto mantém sua direção.
+
+\paragraph{Processamento das mensagens}
+
+Em cada iteração, o runner consulta a fila de recebimento sem bloquear, processando até 64 eventos. Esse limite permite voltar regularmente ao teclado, à atualização da sessão e à apresentação da tela.
+
+Os eventos locais de desconexão e as mensagens recebidas seguem caminhos distintos:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+if message == {"type": "DISCONNECTED"}:
+    session.notify_disconnected(sender)
+else:
+    session.handle_message(sender, message)
+
+session.update()
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+Após o processamento, \texttt{update()} verifica o progresso e os prazos da sessão. Quando uma proposta local é necessária, o runner envia a direção pendente ou solicita a manutenção da direção atual.
+
+A função interna \texttt{transmitir()} retira as mensagens produzidas por \texttt{drain\_outgoing()} e consulta \texttt{recipients\_for()} para obter seus destinatários. Cada mensagem é enfileirada com \texttt{send\_to()}; uma recusa de envio é encaminhada como indisponibilidade do destino.
+
+\paragraph{Renderização e registros de execução}
+
+O runner consulta \texttt{snapshot()} para desenhar o estado confirmado, acompanhado da fase atual, dos canais registrados e de eventuais informações de interrupção. A apresentação ocorre no mesmo laço que processa a entrada do usuário, evitando escritas concorrentes na tela.
+
+As mudanças de época ou ciclo confirmado também são registradas em um histórico com o hash do snapshot.
+
+\paragraph{Encerramento}
+
+Ao atingir FINISHED ou LEFT, o runner mantém um curto intervalo de processamento antes de encerrar. Em ABORTED, inicia o fechamento. O bloco \texttt{finally} transmite as mensagens ainda disponíveis, aguarda os envios locais com \texttt{flush()} e fecha o manager. A saída dos contextos do teclado e do render restaura o terminal.
 
 
-% ==================================================
-% REFERÊNCIAS
-% ==================================================
 
-\begin{thebibliography}{9}
 
-\bibitem{exemplo}
-AUTOR, Nome.
+\subsection{Estratégias de Detecção e Recuperação de Falhas}
+\subsubsection{Do lobby}
 
-\textit{Título da obra}.
+\paragraph{Desconexão de jogador durante montagem de sala}
 
-Editora, ano.
+A cada vez que o servidor recebe uma mensagem, estipula-se um tempo de \textit{timeout} para avaliar a conexão. Caso seja superado, conclui-se que o jogador se desconectou da sala de alguma maneira inesperada, como queda na Internet ou na energia, o que leva a sua imediata desconexão do lobby. Assim, tudo é feito de maneira limpa: excluem-se os registros do jogador e, se for o único componente, a própria partida, de maneira que não haja resquícios inalcançáveis desse cliente que atrapalhem os outros usuários.
 
-\bibitem{documentacao}
-NOME DA ORGANIZAÇÃO.
+\paragraph{Queda do servidor de lobby}
 
-\textit{Documentação oficial da tecnologia}.
+De maneira semelhante, o cliente avalia o tempo de entre respostas do servidor: se superar o limite estipulado, conclui-se que houve a desconexão. No caso em que ainda está na fase de lobby, temos que o cliente será finalizado e terá de se conectar novamente, fato comunicado com uma mensagem clara via terminal. Em casos de partida em andamentos, o servidor não tem mais função, então sua queda, embora controlada, simplesmente não traz consequências aos jogadores.
 
-Disponível em: \url{https://exemplo.com}.
 
-Acesso em: 24 out. 2026.
+\subsubsection{Detecção e recuperação durante a partida}
+\label{sec:implementacao-recovery}
 
-\end{thebibliography}
+O arquivo \texttt{recovery.py} concentra os mecanismos utilizados para investigar a indisponibilidade de participantes e organizar a retomada da partida. Sua classe \texttt{RecoveryMixin}, herdada por \texttt{GameSession}, mantém os dados do acordo e implementa as etapas de coleta, verificação, aplicação e retomada.
+
+\paragraph{Informações mantidas para recuperação}
+
+A recuperação utiliza um histórico dos três últimos checkpoints confirmados. Cada registro conserva o snapshot local, seu hash, as declarações do ciclo e os hashes que justificaram sua confirmação. O método \texttt{\_save\_checkpoint()} atualiza esse histórico durante o avanço da partida.
+
+O atributo \texttt{\_recovery} reúne o identificador do acordo, o participante suspeito, a composição anterior, os relatórios recebidos, a proposta e suas confirmações. Também são mantidos registros de conexões encerradas e participantes que não responderam às sondagens.
+
+\paragraph{Detecção da indisponibilidade}
+
+A investigação pode começar pelo encerramento de uma conexão ou pela ausência de progresso em uma barreira. O método \texttt{\_handle\_disconnect()} registra a perda do canal e verifica se o participante ainda é necessário à comunicação. Uma conexão encerrada após uma saída já confirmada não produz uma nova remoção.
+
+Quando um prazo normal expira, \texttt{\_begin\_detection()} inicia sondagens aos participantes ausentes. Essa verificação considera que um hash pode estar faltando porque seu remetente ainda espera o movimento de outro jogador. Portanto, a quantidade de mensagens pendentes não corresponde necessariamente à quantidade de processos indisponíveis.
+
+Após o prazo de sondagem, \texttt{\_drive\_detection()} identifica os participantes que não responderam:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+missing = d["candidates"] - d["alive"]
+
+if len(missing) == 1:
+    failed = next(iter(missing))
+    self._verified_failures.add(failed)
+    self._suspect(failed)
+else:
+    self._abort(
+        "RECOVERY_FAILED",
+        "Sondagem sem falha unica identificavel",
+        self.current_tick
+    )
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+A recuperação é iniciada quando existe uma única falha identificável. Uma resposta à sondagem informa que o processo continua responsivo e pode impedir a aprovação da suspeita. Os prazos definem a indisponibilidade observada pela aplicação, estando sujeitos aos atrasos da rede.
+
+\paragraph{Pausa e organização do acordo}
+
+O método \texttt{\_suspect()} verifica se a situação permite recuperação. Se o participante indisponível for o coordenador, ocorre encerramento controlado. Caso contrário, \texttt{\_pause()} suspende o avanço, fixa os membros esperados e descarta mensagens normais ainda pendentes na fila de saída, preservando as evidências registradas.
+
+Um participante comum comunica a suspeita por FAILURE\_REPORT. O coordenador inicia o acordo com RECOVERY\_BEGIN, e os sobreviventes compartilham seus relatórios por RECOVERY\_STATUS. Antes de publicar seu relatório, um participante que ainda não verificou a falha pode sondar o alvo.
+
+Os métodos \texttt{\_publish\_status()} e \texttt{\_receive\_status()} realizam a fragmentação e a reconstrução dos relatórios. São compartilhados os metadados e as evidências dos checkpoints; os snapshots completos permanecem armazenados localmente.
+
+\paragraph{Escolha e reprodução da base}
+
+O método \texttt{\_recovery\_base()} seleciona o maior ciclo já confirmado por algum sobrevivente. Essa escolha preserva decisões que podem ter sido exibidas, mesmo quando outro peer ainda está aguardando uma confirmação daquele ciclo.
+
+Se o estado local já corresponde à base, seu hash é conferido. Se está um ciclo atrás, são verificadas as declarações, os hashes de todos os membros e o vínculo com o checkpoint anterior. O ciclo é então reproduzido localmente, e seu resultado deve coincidir com o hash informado.
+
+Um candidato que ninguém confirmou pode ser descartado. Entretanto, um ciclo confirmado por um sobrevivente não é desfeito para escolher uma base mais antiga. Se as evidências forem insuficientes, divergentes ou estiverem fora da janela prevista, o acordo não prossegue.
+
+\paragraph{Proposta de remoção e confirmações}
+
+O método \texttt{\_make\_proposal()} calcula a transição sobre a base comum. Durante uma partida ainda em disputa, a moto do participante removido é marcada como morta, preservando posição, direção e rastros. Nenhuma moto se move nessa transição. A composição dos participantes é atualizada e uma nova época é proposta.
+
+Se a base já contém um resultado final confirmado, esse resultado é preservado. Nesse caso, a recuperação conclui sua distribuição sem alterar retroativamente o vencedor ou empate.
+
+O avanço do acordo é controlado por \texttt{\_drive\_recovery()}. O coordenador apresenta a proposta, os sobreviventes a calculam e verificam, e as confirmações são reunidas. Após os ACKs exigidos, o coordenador emite COMMIT e os participantes aplicam a decisão.
+
+O método \texttt{\_apply\_recovery()} atualiza os dados fundamentais da sessão:
+
+\par\smallskip
+\noindent
+\begin{minipage}{\linewidth}
+\begin{verbatim}
+self._confirmed = deepcopy(r["result"])
+self.confirmed_tick = self._confirmed["tick"]
+self.epoch = r["proposal"]["new_epoch"]
+self.active_participants = frozenset(
+    r["proposal"]["members"]
+)
+\end{verbatim}
+\end{minipage}
+\par\smallskip
+
+As estruturas temporárias da época anterior são limpas e um checkpoint da nova composição é registrado. Cada sobrevivente confirma a aplicação com RECOVERY\_APPLIED. Somente após reunir essas confirmações o coordenador emite RECOVERY\_RESUME.
+
+\paragraph{Retomada e limites do mecanismo}
+
+O método \texttt{\_resume\_recovery()} registra a recuperação concluída e libera o próximo ciclo, ou encerra normalmente se houver resultado final. Mensagens de épocas antigas são descartadas. Uma fila limitada conserva mensagens da nova época que cheguem antes da autorização de retomada.
+
+Cada fase possui um prazo de conclusão. Divergências nas evidências, decisões inválidas, ausência das confirmações necessárias ou uma segunda falha durante o acordo resultam em interrupção controlada. A implementação admite recuperações sucessivas, mas trata uma falha por acordo e pressupõe participantes cooperativos.
+
+Também existem situações fora do fluxo recuperável, como falhas durante a preparação ou enquanto o próprio desistente aguarda a confirmação de saída. Esses casos são encerrados de forma controlada, evitando esperas indefinidas ou a aplicação de decisões locais incompatíveis.
+
+\section{Instruções de Configuração e Execução}
+\label{sec:execucao}
+
+\subsection{Requisitos e organização do diretório}
+
+A execução requer Python 3.10 ou superior e um terminal interativo para cada jogador. A comunicação de rede utiliza diretamente a biblioteca padrão de sockets do Python. As dependências declaradas no repositório podem ser instaladas com o comando apresentado abaixo.
+
+Suponha que a pasta \texttt{TRON} esteja dentro de uma pasta chamada \texttt{DIRETÓRIO}, conforme a estrutura:
+
+\begin{verbatim}
+DIRETÓRIO/
+    TRON/
+        __main__.py
+        requirements.txt
+        Network/
+            Client/
+            Server/
+        Render/
+\end{verbatim}
+
+Os comandos de execução devem ser realizados a partir de \texttt{DIRETÓRIO}, isto é, da pasta que contém \texttt{TRON}:
+
+\begin{verbatim}
+	cd "DIRETÓRIO"
+\end{verbatim}
+
+A opção \texttt{-m} solicita ao Python a execução de um módulo ou pacote. Dessa forma, \texttt{python -m TRON} executa o arquivo de entrada do pacote, \texttt{\_\_main\_\_.py}. Se esse comando for executado de dentro da própria pasta \texttt{TRON}, o interpretador poderá apresentar o erro \texttt{No module named TRON}, pois estará procurando o pacote a partir do diretório incorreto.
+
+Nos sistemas em que o interpretador é identificado pelo comando \texttt{python3}, deve-se substituir \texttt{python} por \texttt{python3} nos exemplos seguintes. Os nomes dos arquivos e módulos devem preservar suas letras maiúsculas e minúsculas, especialmente no Linux.
+
+\subsection{Inicialização do servidor de lobby}
+
+O servidor de lobby é executado em um processo separado dos jogadores. Para realizar os testes na mesma máquina, deve-se abrir um terminal em \texttt{DIRETÓRIO} e executar:
+
+\begin{verbatim}
+python -m TRON.Network.Server.serverV2 --host 127.0.0.1 --port 5000
+\end{verbatim}
+
+Os argumentos disponíveis no servidor são:
+
+\begin{description}
+    \item[\texttt{--host}] Define o endereço local no qual o servidor aceita conexões. O endereço \texttt{127.0.0.1} restringe o acesso à própria máquina. O endereço \texttt{0.0.0.0}, utilizado como padrão, permite escutar nas interfaces de rede da máquina, possibilitando o acesso por outros computadores, conforme as condições de rede e firewall.
+
+    \item[\texttt{--port}] Define a porta TCP do lobby. O valor padrão é \texttt{5000}. Os clientes devem utilizar essa mesma porta ao se conectarem.
+
+O servidor deve estar iniciado antes da conexão dos jogadores.
+\subsection{Inicialização dos jogadores}
+
+Cada jogador deve executar o cliente em um processo próprio. Para uma partida com quatro participantes na mesma máquina, devem ser abertos quatro terminais adicionais, todos posicionados em \texttt{DIRETÓRIO}. Execute um dos comandos abaixo em cada terminal:
+
+\begin{verbatim}
+python -m TRON --name Jogador1 --tick-ms 1000
+python -m TRON --name Jogador2 --tick-ms 1000
+python -m TRON --name Jogador3 --tick-ms 1000
+python -m TRON --name Jogador4 --tick-ms 1000
+\end{verbatim}
+
+Nesse exemplo, o intervalo entre movimentos é de 1000 milissegundos, facilitando a observação manual da partida. Quando esse argumento é omitido, utiliza-se o intervalo padrão de 250 milissegundos.
+
+Os argumentos disponíveis no cliente são:
+
+\begin{description}
+    \item[\texttt{--server-host}] Define o endereço do servidor de lobby. O padrão é \texttt{127.0.0.1}, adequado quando cliente e servidor estão na mesma máquina.
+
+    \item[\texttt{--server-port}] Define a porta TCP do servidor de lobby. O padrão é \texttt{5000} e deve corresponder ao valor informado no servidor.
+
+    \item[\texttt{--name}] Define o nome apresentado no lobby. Quando omitido, o programa solicita o nome interativamente. Esse nome não substitui o identificador numérico utilizado na comunicação P2P.
+
+    \item[\texttt{--width}] Define a largura da arena em células. O valor padrão é 40, sendo aceitos valores entre 4 e 200.
+
+    \item[\texttt{--height}] Define a altura da arena em células. O valor padrão é 25, sendo aceitos valores entre 4 e 100.
+
+    \item[\texttt{--tick-ms}] Define o intervalo nominal entre ciclos de movimento, em milissegundos. O padrão é 250, sendo aceitos valores entre 10 e 10000. O avanço de cada ciclo também depende da conclusão das etapas de sincronização entre os participantes.
+
+    \item[\texttt{--max-runtime}] Define o limite local de duração da execução da partida, em segundos, sem incluir a espera no lobby. O padrão é 3600 segundos. Esse argumento limita a execução do processo; não define a velocidade das motos.
+
+    \item[\texttt{-h} ou \texttt{--help}] Exibe a descrição dos argumentos e encerra o programa.
+\end{description}
+
+As dimensões da arena e o intervalo dos ciclos devem ser iguais nos quatro clientes. Na implementação atual, esses parâmetros são definidos no lado dos jogadores. Antes do início dos movimentos, a etapa de preparação compara as configurações e impede que participantes iniciem a partida com estados iniciais incompatíveis.
+
+Para salvar um relatório, por exemplo, pode-se executar:
+
+\subsection{Criação da sala e início da partida}
+
+Após a conexão com o servidor, cada participante recebe um menu com quatro opções:
+
+\begin{enumerate}
+    \item \textbf{Criar partida:} cria uma sala e apresenta seu identificador.
+    \item \textbf{Listar partidas:} apresenta as salas disponíveis, seus participantes e a quantidade de jogadores.
+    \item \textbf{Entrar em partida:} solicita o identificador da sala desejada e envia o pedido de entrada ao servidor.
+    \item \textbf{Sair:} encerra a participação no lobby.
+\end{enumerate}
+
+Um dos jogadores deve criar a sala, enquanto os outros três devem entrar utilizando o identificador informado. Ao completar quatro participantes, o servidor distribui a composição da partida, incluindo os identificadores, endereços e portas P2P.
+
+Cada cliente reserva automaticamente uma porta TCP para receber conexões dos demais jogadores. Portanto, não é necessário informar portas P2P manualmente, mesmo quando todos os processos são executados na mesma máquina.
+
+Após receber os dados, os clientes encerram a comunicação com o lobby, estabelecem a malha P2P e executam a preparação da sessão. Os movimentos começam somente após a formação das conexões e a confirmação da configuração comum.
+
+\subsection{Execução em máquinas diferentes}
+
+Para permitir conexões de outros computadores da mesma rede local, o servidor pode ser iniciado com:
+
+\begin{verbatim}
+python -m TRON.Network.Server.serverV2 --host 0.0.0.0 --port 5000
+\end{verbatim}
+
+Os participantes devem informar o IP real da máquina que executa o servidor. Supondo que esse endereço seja \texttt{192.168.1.10}, um cliente pode ser iniciado com:
+
+\begin{verbatim}
+python -m TRON --server-host 192.168.1.10 --name Jogador2
+\end{verbatim}
+
+Note que, para descobrir o endereço IP da máquina de servidor, basta executar \textit{ip -a}, caso o sistema seja Linux, ou \textit{ipconfig}, caso Windows. Disso, é necessário procurar o número correspondente à interface utilizada, como Wi-Fi ou Ethernet, cujos códigos são amplamente descritos online.
+
+\subsection{Controles e encerramento}
+
+Durante o menu do lobby, as opções e os identificadores de sala são confirmados com a tecla Enter. Durante a partida, os controles são:
+
+\begin{description}
+    \item[\texttt{W}] Solicita movimento para cima.
+    \item[\texttt{A}] Solicita movimento para a esquerda.
+    \item[\texttt{S}] Solicita movimento para baixo.
+    \item[\texttt{D}] Solicita movimento para a direita.
+    \item[\texttt{Q} ou Esc] Solicita saída voluntária da partida.
+\end{description}
+
+As mudanças de direção não exigem Enter e são aplicadas no próximo ciclo disponível. A inversão direta do sentido da moto não é permitida. Na ausência de uma nova direção, a moto continua se deslocando na direção anterior.
+
+A saída voluntária aguarda sua confirmação pelos demais participantes antes de encerrar o processo local. Já o encerramento abrupto do processo é tratado como uma falha de comunicação e aciona o mecanismo de recuperação da sessão, conforme descrito na seção de tolerância a falhas.
+
+\section{Dificuldades Encontradas e Conclusão}
+
+\subsection{Principais Desafios Técnicos}
+
+Ao longo do período letivo, houve poucas oportunidades de aplicar, em atividades práticas, os conhecimentos apresentados nas aulas. Assim, uma das principais dificuldades do projeto foi transformar conceitos como comunicação por sockets, concorrência e sincronização distribuída em uma implementação funcional. Essa experiência prática inicial limitada levou ao uso extensivo de ferramentas de inteligência artificial como apoio à elaboração do código, à compreensão de seu funcionamento e à investigação de erros.
+
+Entretanto, o código produzido com esse auxílio também exigiu revisão e testes. Problemas de integração, gerenciamento de threads, encerramento de conexões e organização dos módulos demonstraram a necessidade de compreender as soluções propostas e verificar sua compatibilidade com a arquitetura adotada. O funcionamento isolado de um componente não garantia o comportamento correto do sistema completo.
+
+Outro desafio relevante foi implementar a tolerância a desconexões durante a partida. Como cada peer mantém sua própria arena e depende das mensagens dos demais para confirmar os ciclos, a queda de um participante pode interromper o avanço da simulação. Além disso, os sobreviventes podem detectar a falha em momentos diferentes ou estar em etapas distintas de confirmação do mesmo ciclo.
+
+Por esse motivo, não bastava remover localmente o jogador desconectado. Foi necessário acrescentar ao protocolo de aplicação um conjunto específico de mensagens de detecção e recuperação, permitindo aos sobreviventes estabelecer uma base consistente, confirmar a remoção e retomar a partida. A introdução de um coordenador para organizar esse acordo aumentou a complexidade da implementação, mas permitiu preservar a simulação distribuída durante a execução normal.
+
+Além disso, vale ressaltar a variedade de mensagens que circulavam, eventualmente, num mesmo intervalo de tempo. Isso, ao considerar as inúmeras \textit{threads}, abria margem para condições de corrida, um problema concorrente de alta complexidade. Disso, o grupo teve que refatorar a arquitetura e lançar mão de diversos padrões de projeto mais complicados, com fito de sanar a problemática de maneira mais elegante e robusta.
+
+Por fim, destaca-se a própria execução do jogo, principalmente em máquinas diferentes. O grupo não tinha experiência prévia na configuração manual de IPs em uma rede local, então foi gasto um bom tempo para descobrir, aplicar e testar soluções diversas, muitas delas que se provaram ineficazes. De qualquer forma, no final do projeto, o problema foi sanado e as dúvidas, resolvidas.
+
+\subsection{Considerações Finais}
+
+O desenvolvimento do TRON permitiu aplicar os conceitos da disciplina em um sistema que combina organização centralizada de partidas e comunicação direta entre jogadores. A separação entre lobby e execução P2P possibilitou que as partidas iniciadas fossem independentes da disponibilidade do servidor central.
+
+A simulação determinística, acompanhada da comparação de hashes, forneceu um mecanismo para verificar a consistência dos estados calculados pelos participantes. O tratamento de saídas voluntárias e a recuperação após a queda de um jogador comum complementaram esse mecanismo, enquanto situações em que não é possível concluir o acordo resultam em encerramento controlado.
+
+A experiência evidenciou que as garantias do TCP não substituem as decisões necessárias na camada de aplicação. Mesmo com entrega confiável e ordenada de bytes, foi necessário definir o enquadramento das mensagens, as barreiras de sincronização, os prazos de espera e o comportamento diante de falhas.
+
+Por fim, o projeto contribuiu para ampliar a compreensão prática sobre sistemas distribuídos e sobre a importância da especificação, da integração e dos testes. O uso de inteligência artificial auxiliou o desenvolvimento, mas também reforçou a necessidade de análise crítica das soluções e de validação do comportamento implementado.
 
 
 \end{document}
