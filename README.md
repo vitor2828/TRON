@@ -4,13 +4,16 @@ Uma implementação multijogador de TRON - Redes de Computadores UnB 26.2
 
 <img width="161" height="97" alt="Captura de tela de 2026-10-26 10-08-40" src="https://github.com/user-attachments/assets/1b03b817-aba9-4efe-9fc8-d0ca730c6ffd" />
 
-## Executar com Docker
+## Executar em máquinas diferentes 
 
-O jogo usa o teclado no terminal, então execute o container em modo interativo:
+Usamos os Códigos a seguir para executar o projeto em máquinas diferentes, sendo o primeiro código para o servidor e o egundo para o cliente.
+
+(Favor renomear a pasta do projeto para TRON caso o nome seja diferente)
 
 ```bash
-docker build -t tron .
-docker run --rm -it tron
+python -m TRON --host 0.0.0.0 --port 5000
+
+python -m TRON --server-host IP_REAL_DA_MAQUINA_DO_SERVIDOR --server-port 5000
 ```
 
 ## Componentes do Grupo
