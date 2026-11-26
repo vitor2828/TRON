@@ -11,7 +11,7 @@ Usamos os Códigos a seguir para executar o projeto em máquinas diferentes, sen
 (Favor renomear a pasta do projeto para TRON caso o nome seja diferente)
 
 ```bash
-python -m TRON --host 0.0.0.0 --port 5000
+python -m TRON.Network.Server.serverV2 --host 0.0.0.0 --port 5000
 
 python -m TRON --server-host IP_REAL_DA_MAQUINA_DO_SERVIDOR --server-port 5000
 ```
